@@ -83,6 +83,18 @@ jobs:
             echo "fontconfig caches: $(ls /var/cache/fontconfig | wc -l)"
             start=$(date +%s%N); fc-match "Noto Serif CJK SC"; echo "fc-match: $(( ($(date +%s%N) - start) / 1000000 )) ms"
             start=$(date +%s%N); fc-list | wc -l; echo "fc-list: $(( ($(date +%s%N) - start) / 1000000 )) ms"'
+          # XeLaTeX est lent en CI (~10 s) mais pas en local : phases mesurées une à une, deux fois
+          # dans le même conteneur, avec les décisions de cache de fontconfig (FC_DEBUG=16).
+          docker run --rm --read-only --tmpfs /tmp:rw,noexec,size=512m --network none \
+            --entrypoint sh "$LOCAL_TAG" -c '
+            cd /tmp && printf "%s\n" "\\documentclass{article}\\begin{document}x\\end{document}" > t.tex
+            for run in 1 2; do
+              start=$(date +%s%N); xelatex -no-pdf -interaction=batchmode t.tex >/dev/null
+              echo "run $run xelatex -no-pdf: $(( ($(date +%s%N) - start) / 1000000 )) ms"
+              start=$(date +%s%N); xdvipdfmx -q t.xdv
+              echo "run $run xdvipdfmx: $(( ($(date +%s%N) - start) / 1000000 )) ms"
+            done
+            FC_DEBUG=16 xelatex -no-pdf -interaction=batchmode t.tex 2>&1 | grep -ciE "scanning|invalid|not valid" || true'
 
       - name: Smoke tests (runc)
         run: python3 tests/run_cases.py --image "$LOCAL_TAG" --runtime runc tests/smoke
