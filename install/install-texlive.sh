@@ -66,10 +66,34 @@ tlpdbopt_post_code 1
 PROFILE
 
 # install-tl vérifie la signature GPG du dépôt (gpg est installé dans l'étape de build).
-"$workdir/install-tl" --profile "$workdir/texlive.profile" --repository "$repository" --no-interaction
+"$workdir/install-tl" --profile "$workdir/texlive.profile" --repository "$repository" --no-interaction \
+  2>&1 | tee "$workdir/install.log"
 
 bindir="${texdir}/bin/$(uname -m)-linux"
 tlmgr="${bindir}/tlmgr"
+
+# install-tl continue quand un miroir ne sert pas un paquet (« inessential packages failed ») :
+# l'image serait incomplète sans que le build échoue. On relance ces paquets, puis on vérifie.
+failed=$(awk '/packages failed to install properly:/ { listing = 1; next }
+              /You can fix this/ { listing = 0 }
+              listing { print }' "$workdir/install.log" | xargs)
+if [[ -n "$failed" ]]; then
+  echo "Packages that failed to install, retrying: $failed"
+  for attempt in 1 2 3; do
+    # shellcheck disable=SC2086 # une liste de noms de paquets
+    if "$tlmgr" update --all --reinstall-forcibly-removed &&
+      "$tlmgr" info --only-installed --data name $failed >/dev/null; then
+      break
+    fi
+    if [[ "$attempt" == 3 ]]; then
+      echo "Packages still missing after 3 attempts: $failed" >&2
+      exit 1
+    fi
+    sleep $((attempt * 15))
+  done
+  # Les formats qui dépendaient de ces paquets n'ont pas été construits par install-tl.
+  "${bindir}/fmtutil-sys" --no-error-if-no-engine=luametatex,luajithbtex,luajittex,mfluajit,xetex --all
+fi
 
 # Le schéma medium n'inclut ni biber ni latexextra : on ajoute ce qu'un projet courant attend.
 if [[ "$TEXLIVE_SCHEME" == medium ]]; then

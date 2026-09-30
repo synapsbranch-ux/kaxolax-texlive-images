@@ -1,0 +1,9 @@
+{
+  "description": "XeLaTeX avec xeCJK et Noto Serif CJK (cas séparé : chargement des polices CJK mesuré à part).",
+  "compiler": "xelatex",
+  "expect": {
+    "status": ["success"],
+    "files": ["output.pdf"],
+    "logLacks": ["Missing character", "cannot be found", "not found"]
+  }
+}

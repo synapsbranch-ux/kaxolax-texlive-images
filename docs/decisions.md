@@ -31,3 +31,9 @@ Chaque décision non triviale : contexte, décision, alternatives écartées (ci
 
 - La spécification prévoit ECR. L'image `medium` est aussi publiée sur GHCR (repo public, `GITHUB_TOKEN`, sans secret) : un développeur la récupère sans identifiants AWS et sans 15 minutes de build.
 - `medium` est construite en amd64 et `full` en arm64 (runner ARM natif, sans émulation QEMU), chacune testée sous runc et sous gVisor.
+
+## 2026-09-30 · Paquets non installés par un miroir défaillant
+
+- Contexte : lors du build full arm64, un miroir CTAN n'a pas servi une dizaine de paquets (`xits`, `zhnumber`…) ; install-tl les déclare « inessential » et termine sans erreur, et `fmtutil-sys --all` échoue sans bloquer.
+- Décision : le script relit la liste des paquets en échec, relance `tlmgr update --all --reinstall-forcibly-removed` (3 tentatives), vérifie qu'ils sont installés puis reconstruit les formats. Le build échoue s'il en manque encore.
+- Écarté : épingler un miroir unique (aucun n'est garanti disponible).
