@@ -1,0 +1,9 @@
+{
+  "description": "biblatex avec biber (exécutable PAR, lancé via le wrapper).",
+  "compiler": "pdflatex",
+  "expect": {
+    "status": ["success"],
+    "files": ["output.pdf", "output.bbl"],
+    "logLacks": ["undefined references", "Please (re)run Biber"]
+  }
+}

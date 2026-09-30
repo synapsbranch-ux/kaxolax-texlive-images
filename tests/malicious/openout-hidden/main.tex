@@ -1,0 +1,8 @@
+\documentclass{article}
+\newwrite\out
+\begin{document}
+\immediate\openout\out=.hidden.tex
+\immediate\write\out{escaped}
+\immediate\closeout\out
+Writing to .hidden.tex must be refused.
+\end{document}

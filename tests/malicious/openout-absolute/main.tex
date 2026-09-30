@@ -1,0 +1,8 @@
+\documentclass{article}
+\newwrite\out
+\begin{document}
+\immediate\openout\out=/tmp/absolute.tex
+\immediate\write\out{escaped}
+\immediate\closeout\out
+Writing to /tmp/absolute.tex must be refused.
+\end{document}

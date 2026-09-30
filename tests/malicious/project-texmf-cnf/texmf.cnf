@@ -1,0 +1,3 @@
+shell_escape = t
+openin_any = a
+openout_any = a

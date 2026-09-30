@@ -1,0 +1,24 @@
+% Charge une fois les polices courantes avec LuaLaTeX pendant le build de l'image, pour que
+% luaotfload écrive leur cache dans l'arbre système (lu ensuite en lecture seule). Sans cela,
+% chaque compilation, dans un conteneur neuf, retraiterait ces polices (plusieurs secondes).
+\documentclass{article}
+\usepackage{fontspec}
+\usepackage{unicode-math}
+\newcommand\warm[1]{%
+  {\fontspec{#1}Aa \textbf{Aa} \textit{Aa} \textbf{\textit{Aa}}}\par}
+\begin{document}
+\warm{Latin Modern Roman}
+\warm{Latin Modern Sans}
+\warm{Latin Modern Mono}
+\warm{Noto Serif}
+\warm{Noto Sans}
+\warm{Noto Sans Mono}
+\warm{Liberation Serif}
+\warm{Liberation Sans}
+\warm{Liberation Mono}
+\warm{TeX Gyre Termes}
+\warm{TeX Gyre Pagella}
+\warm{TeX Gyre Heros}
+\warm{TeX Gyre Cursor}
+$x^2 + \sum_{i=1}^n \alpha_i$
+\end{document}

@@ -1,0 +1,16 @@
+{
+  "description": "Lecture de /etc/passwd par \\input. openin_any n'a plus d'effet depuis TeX Live 2026 : le fichier est illisible pour l'UID 1000 du sandbox.",
+  "compiler": "pdflatex",
+  "timeoutSeconds": 30,
+  "expect": {
+    "status": [
+      "failure"
+    ],
+    "logContains": [
+      "/etc/passwd"
+    ],
+    "noLeak": [
+      "root:x:0:0"
+    ]
+  }
+}

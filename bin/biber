@@ -1,0 +1,14 @@
+#!/bin/sh
+# biber est un exécutable PAR : il doit tourner depuis un répertoire inscriptible et exécutable.
+# Le cache extrait au build (/var/cache/biber, lecture seule) est recopié dans le tmpfs dédié
+# /tmp/biber (monté par l'agent avec exec), ce qui évite ~5 s d'extraction à chaque appel.
+set -eu
+target=/tmp/biber/cache
+if [ ! -d /tmp/biber ] || [ ! -w /tmp/biber ]; then
+  echo "kaxolax: /tmp/biber must be a writable tmpfs mounted with exec" >&2
+  exit 1
+fi
+if [ ! -d "$target" ]; then
+  cp -R /var/cache/biber/cache "$target"
+fi
+PAR_GLOBAL_TEMP="$target" exec /usr/local/texlive/bin/biber "$@"

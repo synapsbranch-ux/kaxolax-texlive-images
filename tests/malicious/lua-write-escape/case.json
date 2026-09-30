@@ -1,0 +1,9 @@
+{
+  "description": "Écriture hors du répertoire de travail par io.open depuis Lua : refusée sous LuaLaTeX.",
+  "compiler": "lualatex",
+  "timeoutSeconds": 45,
+  "expect": {
+    "status": ["success", "failure"],
+    "logContains": ["KX-LUA-WRITE refused ../lua-escape.txt", "KX-LUA-WRITE refused /tmp/lua-absolute.txt"]
+  }
+}

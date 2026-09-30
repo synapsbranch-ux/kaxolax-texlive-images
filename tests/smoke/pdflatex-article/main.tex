@@ -1,0 +1,25 @@
+\documentclass{article}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{hyperref}
+
+\title{Kaxolax smoke test}
+\author{Kaxolax}
+
+\begin{document}
+\maketitle
+
+\input{chapters/intro}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.4\linewidth]{figures/plot.png}
+  \caption{A small generated figure.}
+  \label{fig:plot}
+\end{figure}
+
+See Figure~\ref{fig:plot} and the classic reference~\cite{knuth1984}.
+
+\bibliographystyle{plain}
+\bibliography{refs}
+\end{document}

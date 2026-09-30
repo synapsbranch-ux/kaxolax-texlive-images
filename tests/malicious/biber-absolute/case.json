@@ -1,0 +1,9 @@
+{
+  "description": "biber invité à lire /etc/passwd comme base bibliographique : rien ne fuit.",
+  "compiler": "pdflatex",
+  "timeoutSeconds": 45,
+  "expect": {
+    "status": ["success", "failure"],
+    "noLeak": ["root:x:0:0"]
+  }
+}

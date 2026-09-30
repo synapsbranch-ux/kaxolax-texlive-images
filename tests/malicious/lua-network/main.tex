@@ -1,0 +1,19 @@
+\documentclass{article}
+\begin{document}
+\directlua{
+  local ok, socket = pcall(require, "socket")
+  if ok and socket and socket.tcp then
+    local tcp = socket.tcp()
+    tcp:settimeout(3)
+    local connected, err = tcp:connect("1.1.1.1", 80)
+    texio.write_nl("KX-NET connected=" .. tostring(connected) .. " err=" .. tostring(err))
+  else
+    texio.write_nl("KX-NET socket library unavailable")
+  end
+  local popen_ok, handle = pcall(function() return io.popen("id") end)
+  local output = popen_ok and handle and handle:read("a") or nil
+  local exec_ok, exec_result = pcall(function() return os.execute and os.execute("id") end)
+  texio.write_nl("KX-EXEC popen=" .. tostring(output) .. " execute=" .. tostring(exec_result))
+}
+Network access from Lua must fail.
+\end{document}

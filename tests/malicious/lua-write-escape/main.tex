@@ -1,0 +1,15 @@
+\documentclass{article}
+\begin{document}
+\directlua{
+  for _, path in ipairs({"../lua-escape.txt", "/tmp/lua-absolute.txt"}) do
+    local f = io.open(path, "w")
+    if f then
+      f:write("escaped")
+      f:close()
+      texio.write_nl("KX-LUA-WRITE opened " .. path)
+    else
+      texio.write_nl("KX-LUA-WRITE refused " .. path)
+    end
+  end
+}
+\end{document}

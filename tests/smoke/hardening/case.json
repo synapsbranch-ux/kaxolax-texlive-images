@@ -1,0 +1,12 @@
+{
+  "description": "L'image tourne en UID 1000 avec les réglages durcis de texmf.cnf.",
+  "command": [
+    "sh",
+    "-c",
+    "echo uid=$(id -u) && echo openin_any=$(kpsewhich -var-value=openin_any) && echo openout_any=$(kpsewhich -var-value=openout_any) && echo shell_escape=$(kpsewhich -var-value=shell_escape)"
+  ],
+  "expect": {
+    "status": ["success"],
+    "outputContains": ["uid=1000", "openin_any=p", "openout_any=p", "shell_escape=f"]
+  }
+}

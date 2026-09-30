@@ -1,0 +1,14 @@
+\documentclass{article}
+\begin{document}
+\directlua{
+  local f = io.open("@@HOST_CANARY@@", "r")
+  if f then
+    local content = f:read("a")
+    f:close()
+    texio.write_nl("KX-LUA-READ " .. content)
+    tex.print(-2, content)
+  else
+    texio.write_nl("KX-LUA-READ refused")
+  end
+}
+\end{document}

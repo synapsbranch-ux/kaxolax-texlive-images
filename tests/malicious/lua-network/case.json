@@ -1,0 +1,21 @@
+{
+  "description": "Accès réseau depuis Lua (\\directlua, LuaSocket) et commandes via io.popen/os.execute sous LuaLaTeX : impossibles.",
+  "compiler": "lualatex",
+  "timeoutSeconds": 45,
+  "expect": {
+    "status": [
+      "success",
+      "failure"
+    ],
+    "logContains": [
+      "KX-NET socket library unavailable",
+      "KX-EXEC popen=nil"
+    ],
+    "logLacks": [
+      "KX-NET connected=1"
+    ],
+    "noLeak": [
+      "uid=1000"
+    ]
+  }
+}

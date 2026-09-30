@@ -1,0 +1,20 @@
+{
+  "description": "Un texmf.cnf fourni par le projet ne réactive pas shell escape (il n'est pas dans TEXMFCNF).",
+  "compiler": "pdflatex",
+  "timeoutSeconds": 30,
+  "expect": {
+    "status": [
+      "success",
+      "failure"
+    ],
+    "logContains": [
+      "disabled"
+    ],
+    "absentFiles": [
+      "pwned-cnf.txt"
+    ],
+    "noLeak": [
+      "42-KX-MARK"
+    ]
+  }
+}

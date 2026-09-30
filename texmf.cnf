@@ -1,0 +1,11 @@
+% Kaxolax : réglages de sécurité du sandbox de compilation.
+% Ajouté à /usr/local/texlive/<année>/texmf.cnf, qui l'emporte sur texmf-dist/web2c/texmf.cnf.
+% Ces valeurs ne doivent jamais être assouplies, même temporairement.
+
+% Lecture et écriture « paranoïaques » : pas de chemin absolu, pas de « .. », pas de fichier
+% caché. Un document ne lit et n'écrit que dans son répertoire de travail et les arbres TeX.
+openin_any = p
+openout_any = p
+
+% \write18, \input|cmd et les appels système de LuaTeX (os.execute, io.popen) sont désactivés.
+shell_escape = f

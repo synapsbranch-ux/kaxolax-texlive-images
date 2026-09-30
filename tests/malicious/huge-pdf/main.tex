@@ -1,0 +1,17 @@
+\documentclass{article}
+% Des milliers de pages, chacune avec un flux non compressé de 64 Ko : le PDF dépasse vite
+% le plafond de 100 Mo (RLIMIT_FSIZE à 101 Mo), bien avant la fin du document.
+\pdfcompresslevel=0
+\pdfobjcompresslevel=0
+\def\chunk{0 0 m 1 1 l S }
+\edef\chunk{\chunk\chunk\chunk\chunk\chunk\chunk\chunk\chunk}% 8
+\edef\chunk{\chunk\chunk\chunk\chunk\chunk\chunk\chunk\chunk}% 64
+\edef\chunk{\chunk\chunk\chunk\chunk\chunk\chunk\chunk\chunk}% 512
+\edef\chunk{\chunk\chunk\chunk\chunk\chunk\chunk\chunk\chunk}% 4096 (≈ 64 Ko)
+\newcount\pages
+\begin{document}
+\loop
+  \pdfliteral{\chunk}Page \the\pages\newpage
+  \advance\pages by 1
+\ifnum\pages<20000 \repeat
+\end{document}

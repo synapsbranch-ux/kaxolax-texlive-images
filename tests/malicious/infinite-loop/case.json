@@ -1,0 +1,8 @@
+{
+  "description": "Boucle infinie : le conteneur est tué au timeout.",
+  "compiler": "pdflatex",
+  "timeoutSeconds": 15,
+  "expect": {
+    "status": ["timeout"]
+  }
+}

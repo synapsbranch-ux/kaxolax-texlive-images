@@ -1,0 +1,16 @@
+{
+  "description": "Lecture de /etc/passwd par un chemin relatif avec « .. » : illisible pour l'UID 1000.",
+  "compiler": "pdflatex",
+  "timeoutSeconds": 30,
+  "expect": {
+    "status": [
+      "failure"
+    ],
+    "logContains": [
+      "etc/passwd"
+    ],
+    "noLeak": [
+      "root:x:0:0"
+    ]
+  }
+}

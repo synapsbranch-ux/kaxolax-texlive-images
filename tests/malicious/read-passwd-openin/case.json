@@ -1,0 +1,16 @@
+{
+  "description": "Lecture de /etc/passwd par \\openin et \\read : le fichier est vu comme absent.",
+  "compiler": "pdflatex",
+  "timeoutSeconds": 30,
+  "expect": {
+    "status": [
+      "success"
+    ],
+    "logLacks": [
+      "LEAK:"
+    ],
+    "noLeak": [
+      "root:x:0:0"
+    ]
+  }
+}

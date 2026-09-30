@@ -1,0 +1,10 @@
+{
+  "description": "latexmkrc et .latexmkrc (Perl) fournis par le projet : jamais exécutés (latexmk -norc).",
+  "compiler": "pdflatex",
+  "timeoutSeconds": 30,
+  "expect": {
+    "status": ["success"],
+    "absentFiles": ["pwned-rc.txt"],
+    "noLeak": ["root:x:0:0", "PWNED-KX"]
+  }
+}

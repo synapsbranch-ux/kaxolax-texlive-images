@@ -1,0 +1,13 @@
+{
+  "description": "Écriture vers un chemin absolu (/tmp, pourtant inscriptible) par \\openout : refusée (openout_any = p).",
+  "compiler": "pdflatex",
+  "timeoutSeconds": 30,
+  "expect": {
+    "status": [
+      "failure"
+    ],
+    "outputContains": [
+      "Not writing to /tmp/absolute.tex (openout_any = p"
+    ]
+  }
+}

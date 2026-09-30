@@ -1,0 +1,12 @@
+\documentclass{article}
+\usepackage{fontspec}
+\setmainfont{Noto Sans}
+\newfontfamily\liberation{Liberation Serif}
+
+\begin{document}
+LuaLaTeX with Noto Sans: àéîõü ß œ.
+
+{\liberation Liberation Serif through luaotfload.}
+
+\directlua{tex.print("Lua is available: " .. _VERSION)}
+\end{document}

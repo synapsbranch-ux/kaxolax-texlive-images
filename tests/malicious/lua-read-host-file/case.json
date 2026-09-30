@@ -1,0 +1,10 @@
+{
+  "description": "Lecture par io.open (Lua) d'un fichier de l'hôte : il n'existe pas dans le conteneur.",
+  "compiler": "lualatex",
+  "timeoutSeconds": 45,
+  "expect": {
+    "status": ["success", "failure"],
+    "logContains": ["KX-LUA-READ refused"],
+    "noLeak": ["@@HOST_CANARY_CONTENT@@"]
+  }
+}

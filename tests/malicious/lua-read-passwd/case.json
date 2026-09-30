@@ -1,0 +1,17 @@
+{
+  "description": "Lecture de /etc/passwd par io.open depuis Lua : illisible pour l'UID 1000 du sandbox.",
+  "compiler": "lualatex",
+  "timeoutSeconds": 45,
+  "expect": {
+    "status": [
+      "success",
+      "failure"
+    ],
+    "logContains": [
+      "KX-LUA-READ refused"
+    ],
+    "noLeak": [
+      "root:x:0:0"
+    ]
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "description": "Lecture par \\input d'un fichier de l'hôte (hors du répertoire de travail) : il n'existe pas dans le conteneur.",
+  "compiler": "pdflatex",
+  "timeoutSeconds": 30,
+  "expect": {
+    "status": ["failure"],
+    "noLeak": ["@@HOST_CANARY_CONTENT@@"]
+  }
+}

@@ -1,0 +1,13 @@
+#!/bin/sh
+# luaotfload ne lit sa base de noms de polices que dans son cache inscriptible ($TEXMFVAR, sur le
+# tmpfs /tmp). On y recopie la base construite dans l'image, sinon chaque compilation la
+# régénérerait (plusieurs secondes, voire minutes avec le schéma full).
+set -eu
+names="luatex-cache/generic/names"
+source="/usr/local/texlive/${KAXOLAX_TEXLIVE_YEAR}/texmf-var/${names}"
+target="${TEXMFVAR}/${names}"
+if [ ! -d "$target" ] && [ -d "$source" ]; then
+  mkdir -p "$target"
+  cp "$source"/* "$target"/
+fi
+exec /usr/local/texlive/bin/lualatex "$@"

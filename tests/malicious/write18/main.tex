@@ -1,0 +1,7 @@
+\documentclass{article}
+\begin{document}
+\immediate\write18{echo $((6*7))-KX-MARK > pwned.txt}
+\immediate\write18{touch /tmp/pwned}
+\input|"echo $((6*7))-KX-MARK > piped.txt"
+Shell escape must be disabled.
+\end{document}

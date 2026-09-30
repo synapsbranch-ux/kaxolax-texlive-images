@@ -1,0 +1,9 @@
+{
+  "description": "LuaLaTeX, polices système via luaotfload (cache construit dans l'image), Lua autorisé.",
+  "compiler": "lualatex",
+  "expect": {
+    "status": ["success"],
+    "files": ["output.pdf"],
+    "logLacks": ["Missing character", "not found"]
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "description": "pdfLaTeX, \\input, figure PNG, BibTeX, puis SyncTeX dans les deux sens.",
+  "compiler": "pdflatex",
+  "expect": {
+    "status": ["success"],
+    "files": ["output.pdf", "output.synctex.gz", "output.bbl"],
+    "logLacks": ["Citation `knuth1984' undefined", "There were undefined references"]
+  },
+  "synctex": [
+    { "args": ["view", "-i", "2:1:chapters/intro.tex", "-o", "output.pdf"], "outputContains": ["Page:1"] },
+    { "args": ["edit", "-o", "1:150:200:output.pdf"], "outputContains": ["Input:", "Line:"] }
+  ]
+}

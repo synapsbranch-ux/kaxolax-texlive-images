@@ -1,0 +1,22 @@
+{
+  "description": "Commandes shell par \\write18 et \\input|cmd : désactivées (shell_escape = f).",
+  "compiler": "pdflatex",
+  "timeoutSeconds": 30,
+  "expect": {
+    "status": [
+      "success",
+      "failure"
+    ],
+    "logContains": [
+      "runsystem(echo",
+      "disabled"
+    ],
+    "absentFiles": [
+      "pwned.txt",
+      "piped.txt"
+    ],
+    "noLeak": [
+      "42-KX-MARK"
+    ]
+  }
+}

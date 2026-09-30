@@ -1,0 +1,8 @@
+{
+  "description": "PDF démesuré (20 000 pages de 64 Ko) : tronqué par RLIMIT_FSIZE, la compilation passe en erreur.",
+  "compiler": "pdflatex",
+  "timeoutSeconds": 60,
+  "expect": {
+    "status": ["error", "timeout"]
+  }
+}

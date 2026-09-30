@@ -1,0 +1,16 @@
+{
+  "description": "Écriture d'un fichier caché par \\openout : refusée (openout_any = p).",
+  "compiler": "pdflatex",
+  "timeoutSeconds": 30,
+  "expect": {
+    "status": [
+      "failure"
+    ],
+    "outputContains": [
+      "Not writing to .hidden.tex (openout_any = p"
+    ],
+    "absentFiles": [
+      ".hidden.tex"
+    ]
+  }
+}

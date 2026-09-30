@@ -1,0 +1,5 @@
+ignored:
+  # Les versions des paquets Debian ne sont pas épinglées : l'image de base est épinglée par
+  # digest, et la reconstruction hebdomadaire doit récupérer les correctifs de sécurité
+  # (une version épinglée disparaît de l'archive à la mise à jour suivante).
+  - DL3008

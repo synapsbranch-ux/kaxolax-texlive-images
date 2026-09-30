@@ -1,0 +1,8 @@
+\documentclass{article}
+\newwrite\out
+\begin{document}
+\immediate\openout\out=../escape.tex
+\immediate\write\out{escaped}
+\immediate\closeout\out
+Writing to ../escape.tex must be refused.
+\end{document}

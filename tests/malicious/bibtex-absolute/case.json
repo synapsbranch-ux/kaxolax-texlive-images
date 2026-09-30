@@ -1,0 +1,9 @@
+{
+  "description": "BibTeX invité à lire /etc/passwd comme base bibliographique : refusé (openin_any = p).",
+  "compiler": "pdflatex",
+  "timeoutSeconds": 30,
+  "expect": {
+    "status": ["success", "failure"],
+    "noLeak": ["root:x:0:0"]
+  }
+}

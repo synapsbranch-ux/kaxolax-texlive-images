@@ -1,0 +1,9 @@
+{
+  "description": "XeLaTeX avec les polices Noto (dont CJK) et Liberation, et une police TeX Live via fontconfig.",
+  "compiler": "xelatex",
+  "expect": {
+    "status": ["success"],
+    "files": ["output.pdf"],
+    "logLacks": ["Missing character", "cannot be found", "not found"]
+  }
+}
