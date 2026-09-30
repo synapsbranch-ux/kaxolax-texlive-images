@@ -46,12 +46,14 @@ ENV PATH=/opt/kaxolax/bin:/usr/local/texlive/bin:/usr/local/sbin:/usr/local/bin:
   KAXOLAX_TEXLIVE_YEAR=${TEXLIVE_YEAR} \
   KAXOLAX_TEXLIVE_SCHEME=${TEXLIVE_SCHEME}
 
-# Réglages durcis ajoutés au texmf.cnf local, puis caches de polices construits une fois pour
+# Réglages durcis placés en tête du texmf.cnf local (kpathsea retient la première définition, et
+# install-tl y écrit déjà shell_escape), puis caches de polices construits une fois pour
 # toutes : à l'exécution, l'image est en lecture seule et seuls /tmp et /tmp/biber sont
 # inscriptibles (voir bin/biber et bin/lualatex).
 # openin_any n'a plus d'effet depuis TeX Live 2026 : TeX et Lua peuvent lire tout fichier de
 # l'image. /etc/passwd et /etc/group sont donc illisibles pour l'UID 1000 du sandbox.
-RUN cat /tmp/kaxolax-texmf.cnf >> "/usr/local/texlive/${TEXLIVE_YEAR}/texmf.cnf" \
+RUN cat /tmp/kaxolax-texmf.cnf "/usr/local/texlive/${TEXLIVE_YEAR}/texmf.cnf" > /tmp/texmf.cnf \
+  && mv /tmp/texmf.cnf "/usr/local/texlive/${TEXLIVE_YEAR}/texmf.cnf" \
   && rm /tmp/kaxolax-texmf.cnf \
   && fc-cache -f \
   && export TEXMFVAR="/usr/local/texlive/${TEXLIVE_YEAR}/texmf-var" \
