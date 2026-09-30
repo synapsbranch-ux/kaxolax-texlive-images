@@ -91,8 +91,6 @@ if [[ -n "$failed" ]]; then
     fi
     sleep $((attempt * 15))
   done
-  # Les formats qui dépendaient de ces paquets n'ont pas été construits par install-tl.
-  "${bindir}/fmtutil-sys" --no-error-if-no-engine=luametatex,luajithbtex,luajittex,mfluajit,xetex --all
 fi
 
 # Le schéma medium n'inclut ni biber ni latexextra : on ajoute ce qu'un projet courant attend.
@@ -100,6 +98,21 @@ if [[ "$TEXLIVE_SCHEME" == medium ]]; then
   "$tlmgr" install collection-latexextra collection-bibtexextra collection-fontsrecommended
 fi
 "$tlmgr" install latexmk biber synctex
+
+# Formats qu'install-tl n'a pas construits (paquet absent à ce moment-là), construits maintenant
+# que tous les paquets sont là, puis base ls-R à jour : kpathsea ne cherche les formats de
+# TEXMFSYSVAR que dans ls-R. Un format introuvable serait reconstruit dans chaque conteneur neuf,
+# à chaque compilation (≈ 10 s pour XeLaTeX).
+"${bindir}/fmtutil-sys" --no-error-if-no-engine=luametatex,luajithbtex,luajittex,mfluajit --missing
+"${bindir}/mktexlsr" "${texdir}/texmf-var"
+for format in pdftex:pdflatex xetex:xelatex luahbtex:lualatex; do
+  if ! "${bindir}/kpsewhich" -engine="${format%%:*}" "${format#*:}.fmt"; then
+    echo "Format ${format#*:} (${format%%:*}) is missing" >&2
+    grep -n "web2c/${format%%:*}" -A3 "${texdir}/texmf-var/ls-R" >&2 || true
+    ls -la "${texdir}/texmf-var/web2c/${format%%:*}" >&2 || true
+    exit 1
+  fi
+done
 
 # Chemins indépendants de l'année et de l'architecture (x86_64-linux ou aarch64-linux).
 ln -s "$bindir" /usr/local/texlive/bin

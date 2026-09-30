@@ -37,3 +37,8 @@ Chaque décision non triviale : contexte, décision, alternatives écartées (ci
 - Contexte : lors du build full arm64, un miroir CTAN n'a pas servi une dizaine de paquets (`xits`, `zhnumber`…) ; install-tl les déclare « inessential » et termine sans erreur, et `fmtutil-sys --all` échoue sans bloquer.
 - Décision : le script relit la liste des paquets en échec, relance `tlmgr update --all --reinstall-forcibly-removed` (3 tentatives), vérifie qu'ils sont installés puis reconstruit les formats. Le build échoue s'il en manque encore.
 - Écarté : épingler un miroir unique (aucun n'est garanti disponible).
+
+## 2026-09-30 · Formats vérifiés dans l'image
+
+- Contexte : en CI, le premier `xelatex` de chaque conteneur prenait ~10 s, car `mktexfmt` reconstruisait `xelatex.fmt` dans `/tmp` (le second : 0,2 s). Chaque compilation tourne dans un conteneur neuf : ce serait 10 s de plus à chaque fois.
+- Décision : après tous les `tlmgr install`, `fmtutil-sys --missing` puis `mktexlsr` (kpathsea ne cherche les formats système que dans `ls-R`), et le build échoue si pdfLaTeX, XeLaTeX ou LuaLaTeX ne trouve pas son format avec `MKTEXFMT=0`.

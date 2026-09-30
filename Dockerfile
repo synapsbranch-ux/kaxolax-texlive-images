@@ -50,6 +50,8 @@ ENV PATH=/opt/kaxolax/bin:/usr/local/texlive/bin:/usr/local/sbin:/usr/local/bin:
 # install-tl y écrit déjà shell_escape), puis caches de polices construits une fois pour
 # toutes : à l'exécution, l'image est en lecture seule et seuls /tmp et /tmp/biber sont
 # inscriptibles (voir bin/biber et bin/lualatex).
+# Chaque moteur doit trouver son format dans l'image (MKTEXFMT=0 : aucune reconstruction), sinon
+# chaque compilation, dans un conteneur neuf, le reconstruirait.
 # openin_any n'a plus d'effet depuis TeX Live 2026 : TeX et Lua peuvent lire tout fichier de
 # l'image. /etc/passwd et /etc/group sont donc illisibles pour l'UID 1000 du sandbox.
 RUN cat /tmp/kaxolax-texmf.cnf "/usr/local/texlive/${TEXLIVE_YEAR}/texmf.cnf" > /tmp/texmf.cnf \
@@ -62,6 +64,15 @@ RUN cat /tmp/kaxolax-texmf.cnf "/usr/local/texlive/${TEXLIVE_YEAR}/texmf.cnf" > 
     /usr/share/kaxolax/warmup-fonts.tex \
   && rm -f /tmp/warmup-fonts.* \
   && unset TEXMFVAR \
+  && mkdir /tmp/fmtcheck \
+  && printf '%s\n' '\documentclass{article}\begin{document}x\end{document}' > /tmp/fmtcheck/check.tex \
+  && for engine in pdflatex xelatex lualatex; do \
+    TEXMFVAR=/tmp/texmf-var TEXMFOUTPUT=/tmp/fmtcheck MKTEXFMT=0 \
+      "/usr/local/texlive/bin/${engine}" -interaction=batchmode \
+      -output-directory=/tmp/fmtcheck /tmp/fmtcheck/check.tex >/dev/null \
+      || { echo "${engine}: no usable preloaded format in the image" >&2; exit 1; }; \
+  done \
+  && rm -rf /tmp/fmtcheck /tmp/texmf-var \
   && useradd --uid 1000 --user-group --home-dir /tmp --no-create-home --shell /usr/sbin/nologin tex \
   && mkdir /compile && chown 1000:1000 /compile \
   && install -d -o 1000 -g 1000 /var/cache/biber \
