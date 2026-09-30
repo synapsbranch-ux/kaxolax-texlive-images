@@ -37,6 +37,7 @@ Chaque décision non triviale : contexte, décision, alternatives écartées (ci
 - Contexte : lors du build full arm64, un miroir CTAN n'a pas servi une dizaine de paquets (`xits`, `zhnumber`…) ; install-tl les déclare « inessential » et termine sans erreur, et `fmtutil-sys --all` échoue sans bloquer.
 - Décision : le script relit la liste des paquets en échec, relance `tlmgr update --all --reinstall-forcibly-removed` (3 tentatives), vérifie qu'ils sont installés puis reconstruit les formats. Le build échoue s'il en manque encore.
 - Écarté : épingler un miroir unique (aucun n'est garanti disponible).
+- Choix du miroir : `mirror.ctan.org` redirige vers un miroir différent à chaque requête ; le script en demande un autre (8 essais) tant que le TLS ne se vérifie pas ou que `texlive.tlpdb` manque.
 
 ## 2026-09-30 · Formats vérifiés dans l'image
 

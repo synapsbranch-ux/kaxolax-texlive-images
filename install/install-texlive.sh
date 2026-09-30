@@ -26,9 +26,21 @@ if [[ -z "$repository" ]]; then
     repository="$historic"
   else
     # Résout la redirection une seule fois : toute l'installation vient du même miroir.
-    repository=$(curl -fsSIL --retry 3 -o /dev/null -w '%{url_effective}' \
-      https://mirror.ctan.org/systems/texlive/tlnet/tlpkg/texlive.tlpdb)
-    repository="${repository%/tlpkg/texlive.tlpdb}"
+    # mirror.ctan.org choisit un miroir à chaque requête, et certains ont un certificat incomplet
+    # ou sont indisponibles : on retient le premier qui sert texlive.tlpdb avec un TLS vérifié.
+    for attempt in 1 2 3 4 5 6 7 8; do
+      if resolved=$(curl -fsSIL --retry 2 -o /dev/null -w '%{url_effective}' \
+        https://mirror.ctan.org/systems/texlive/tlnet/tlpkg/texlive.tlpdb); then
+        repository="${resolved%/tlpkg/texlive.tlpdb}"
+        break
+      fi
+      echo "CTAN mirror attempt ${attempt} failed, asking for another mirror" >&2
+      sleep 5
+    done
+    if [[ -z "$repository" ]]; then
+      echo "No CTAN mirror served TeX Live over verified TLS" >&2
+      exit 1
+    fi
   fi
 fi
 echo "TeX Live ${TEXLIVE_YEAR} (${TEXLIVE_SCHEME}) from ${repository}"
