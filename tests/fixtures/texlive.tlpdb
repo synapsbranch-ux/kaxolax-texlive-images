@@ -1,0 +1,799 @@
+name 00texlive.config
+category TLCore
+depend minrelease/2016
+depend release/2026
+
+name 00texlive.installation
+category TLCore
+depend opt_autobackup:0
+depend opt_backupdir:tlpkg/backups
+depend opt_create_formats:1
+depend opt_desktop_integration:1
+depend opt_file_assocs:1
+depend opt_generate_updmap:0
+depend opt_install_docfiles:0
+depend opt_install_srcfiles:0
+depend opt_location:https://mirror.ctan.org/systems/texlive/tlnet
+depend opt_post_code:1
+depend opt_sys_bin:/usr/local/bin
+depend opt_sys_info:/usr/local/share/info
+depend opt_sys_man:/usr/local/share/man
+depend opt_w32_multi_user:1
+depend setting_available_architectures:x86_64-linux
+
+name amsmath
+category Package
+revision 79234
+catalogue latex-amsmath
+shortdesc AMS mathematical facilities for LaTeX
+longdesc The package provides the principal packages in the AMS-LaTeX
+longdesc distribution. It adapts for use in LaTeX most of the
+longdesc mathematical features found in AMS-TeX; it is highly
+longdesc recommended as an adjunct to serious mathematical typesetting
+longdesc in LaTeX. When amsmath is loaded, AMS-LaTeX packages amsbsy
+longdesc (for bold symbols), amsopn (for operator names) and amstext
+longdesc (for text embedded in mathematics) are also loaded.
+containersize 31724
+containerchecksum 5d6768eea6404bcde83f6fdd7025f6f63dfafc633c689a308f1465ffbeb74385daddc4cd2cf4eb6f0152e8a2c9f8c41e7f0a1b2c3d4e5f60718293a4b5c6d7
+doccontainersize 2389656
+srccontainersize 67424
+runfiles size=70
+ texmf-dist/tex/latex/amsmath/amsbsy.sty
+ texmf-dist/tex/latex/amsmath/amscd.sty
+ texmf-dist/tex/latex/amsmath/amsgen.sty
+ texmf-dist/tex/latex/amsmath/amsmath-2018-12-01.sty
+ texmf-dist/tex/latex/amsmath/amsmath.sty
+ texmf-dist/tex/latex/amsmath/amsopn.sty
+ texmf-dist/tex/latex/amsmath/amstex.sty
+ texmf-dist/tex/latex/amsmath/amstext.sty
+ texmf-dist/tex/latex/amsmath/amsxtra.sty
+catalogue-also nath mathtools
+catalogue-contact-home http://www.ams.org/tex/amslatex.html
+catalogue-ctan /macros/latex/required/amsmath
+catalogue-license lppl1.3c
+catalogue-topics maths tagged-pdf-partially
+
+name babel
+category Package
+revision 80223
+shortdesc Multilingual support for LaTeX, LuaLaTeX, XeLaTeX, and Plain TeX
+longdesc This package manages culturally-determined typographical (and
+longdesc other) rules for a wide range of languages. A document may
+longdesc select a single language to be supported, or it may select
+longdesc several, in which case the document may switch from one
+longdesc language to another in a variety of ways.
+containersize 1093220
+doccontainersize 1192420
+srccontainersize 263504
+runfiles size=1379
+ texmf-dist/makeindex/babel/bbglo.ist
+ texmf-dist/makeindex/babel/bbind.ist
+ texmf-dist/tex/generic/babel/UKenglish.sty
+ texmf-dist/tex/generic/babel/USenglish.sty
+ texmf-dist/tex/generic/babel/babel.def
+ texmf-dist/tex/generic/babel/babel.sty
+ texmf-dist/tex/generic/babel/french.sty
+ texmf-dist/tex/generic/babel/hyphen.cfg
+ texmf-dist/tex/generic/babel/locale/fr/babel-fr.ini
+ texmf-dist/tex/generic/babel/locale/fr/babel-french.tex
+ texmf-dist/tex/generic/babel/plain.def
+ texmf-dist/tex/generic/babel/switch.def
+ texmf-dist/tex/generic/babel/txtbabel.def
+catalogue-also polyglossia
+catalogue-contact-bugs https://github.com/latex3/babel/issues
+catalogue-contact-home https://latex3.github.io/babel/
+catalogue-contact-repository https://github.com/latex3/babel
+catalogue-ctan /macros/latex/required/babel/base
+catalogue-license lppl1.3
+catalogue-topics multilingual
+catalogue-version 26.12
+
+name beamer
+category Package
+revision 80053
+shortdesc A LaTeX class for producing presentations and slides
+longdesc The beamer LaTeX class can be used for producing slides. The
+longdesc class works in both PostScript and direct PDF output modes,
+longdesc using the pgf graphics system for visual effects.
+depend amscls
+depend amsfonts
+depend amsmath
+depend atbegshi
+depend etoolbox
+depend geometry
+depend hyperref
+depend iftex
+depend pgf
+depend translator
+depend xcolor
+containersize 166408
+doccontainersize 1611928
+srccontainersize 6684
+runfiles size=260
+ texmf-dist/tex/latex/beamer/beamer.cls
+ texmf-dist/tex/latex/beamer/beamerarticle.sty
+ texmf-dist/tex/latex/beamer/beamerbasecolor.sty
+ texmf-dist/tex/latex/beamer/beamerbasecompatibility.sty
+ texmf-dist/tex/latex/beamer/beamercolorthemedefault.sty
+ texmf-dist/tex/latex/beamer/beamerthemeMadrid.sty
+ texmf-dist/tex/latex/beamer/beamerthemedefault.sty
+ texmf-dist/tex/latex/beamer/translator-beamer-dictionaries/beamer-French.dict
+catalogue-contact-bugs https://github.com/josephwright/beamer/issues
+catalogue-contact-repository https://github.com/josephwright/beamer
+catalogue-ctan /macros/latex/contrib/beamer
+catalogue-license lppl1.3c gpl2+ fdl
+catalogue-topics class presentation tagged-pdf-unsupported
+catalogue-version 3.78
+
+name biblatex
+category Package
+revision 80368
+shortdesc Sophisticated Bibliographies in LaTeX
+longdesc BibLaTeX is a complete reimplementation of the bibliographic
+longdesc facilities provided by LaTeX. Formatting of the bibliography is
+longdesc entirely controlled by LaTeX macros, and a working knowledge of
+longdesc LaTeX should be sufficient to design new bibliography and
+longdesc citation styles.
+depend etoolbox
+depend kvoptions
+depend logreq
+depend pdftexcmds
+depend url
+containersize 270852
+doccontainersize 4904372
+runfiles size=636
+ texmf-dist/bibtex/bib/biblatex/biblatex/biblatex-examples.bib
+ texmf-dist/bibtex/bst/biblatex/biblatex.bst
+ texmf-dist/tex/latex/biblatex/bbx/authoryear.bbx
+ texmf-dist/tex/latex/biblatex/bbx/numeric.bbx
+ texmf-dist/tex/latex/biblatex/biblatex.cfg
+ texmf-dist/tex/latex/biblatex/biblatex.def
+ texmf-dist/tex/latex/biblatex/biblatex.sty
+ texmf-dist/tex/latex/biblatex/blx-bibtex.def
+ texmf-dist/tex/latex/biblatex/blx-compat.def
+ texmf-dist/tex/latex/biblatex/cbx/authoryear.cbx
+ texmf-dist/tex/latex/biblatex/lbx/french.lbx
+catalogue-also translation-biblatex-de
+catalogue-contact-bugs https://github.com/plk/biblatex/issues
+catalogue-contact-home https://github.com/plk/biblatex
+catalogue-ctan /macros/latex/contrib/biblatex
+catalogue-license lppl1.3
+catalogue-topics biblatex biblio tagged-pdf-partially
+catalogue-version 3.22a
+
+name booktabs
+category Package
+revision 77682
+shortdesc Publication quality tables in LaTeX
+longdesc The package enhances the quality of tables in LaTeX, providing
+longdesc extra commands as well as behind-the-scenes optimisation.
+containersize 4436
+doccontainersize 368200
+srccontainersize 10232
+runfiles size=2
+ texmf-dist/tex/latex/booktabs/booktabs.sty
+catalogue-ctan /macros/latex/contrib/booktabs
+catalogue-license lppl1.3c
+catalogue-topics table table-rule tagged-pdf
+catalogue-version 1.61803398
+
+name collection-basic
+category Collection
+revision 72890
+shortdesc Essential programs and files
+longdesc These files are regarded as basic for any TeX system, covering
+longdesc plain TeX macros, Computer Modern fonts, and configuration for
+longdesc common drivers; no LaTeX.
+depend amsfonts
+depend bibtex
+depend cm
+depend dvipdfmx
+depend dvips
+depend kpathsea
+depend makeindex
+depend pdftex
+depend plain
+depend tex
+depend texlive.infra
+
+name collection-bibtexextra
+category Collection
+revision 80305
+shortdesc BibTeX additional styles
+longdesc Additional BibTeX styles and bibliography data(bases), notably
+longdesc including BibLaTeX.
+depend biber
+depend biblatex
+depend collection-latex
+
+name collection-binextra
+category Collection
+revision 80167
+shortdesc TeX auxiliary programs
+longdesc Even more programs, plus the latexmk build tool.
+depend collection-basic
+depend latexmk
+
+name collection-context
+category Collection
+revision 75426
+shortdesc ConTeXt and packages
+longdesc Hans Hagen's powerful ConTeXt system, https://pragma-ade.com.
+longdesc Also includes third-party ConTeXt packages.
+depend collection-basic
+depend context
+depend context-vim
+
+name collection-latex
+category Collection
+revision 77845
+shortdesc LaTeX fundamental packages
+longdesc These packages are either mandated by the core LaTeX team, or
+longdesc very widely used and strongly recommended in practice.
+depend amsmath
+depend babel
+depend collection-basic
+depend geometry
+depend graphics
+depend hyperref
+depend latex
+depend latex-bin
+depend latexconfig
+depend tools
+
+name collection-latexextra
+category Collection
+revision 80373
+shortdesc LaTeX additional packages
+longdesc A very large collection of add-on packages for LaTeX.
+depend collection-latexrecommended
+depend collection-pictures
+depend multirow
+
+name collection-latexrecommended
+category Collection
+revision 78568
+shortdesc LaTeX recommended packages
+longdesc A collection of recommended add-on packages for LaTeX which have
+longdesc widespread use.
+depend beamer
+depend booktabs
+depend collection-latex
+depend fontspec
+depend koma-script
+
+name collection-luatex
+category Collection
+revision 79874
+shortdesc LuaTeX packages
+longdesc Packages for LuaTeX, a Unicode-aware extension of pdfTeX, using
+longdesc Lua as an embedded scripting language.
+depend collection-basic
+depend luamplib
+
+name collection-mathscience
+category Collection
+revision 80290
+shortdesc Mathematics, natural sciences, computer science packages
+depend collection-latex
+depend siunitx
+
+name collection-pictures
+category Collection
+revision 80328
+shortdesc Graphics, pictures, diagrams
+longdesc Including TikZ, pict, etc., but MetaPost and PStricks are
+longdesc separate.
+depend collection-basic
+depend pgf
+
+name context-vim
+category ConTeXt
+revision 62071
+shortdesc Generate ConTeXt syntax highlighting code from vim
+longdesc ConTeXt has excellent pretty printing capabilities for many
+longdesc languages. This module takes the onus of defining syntax
+longdesc highlighting rules away from the user and uses ViM editor to
+longdesc generate the syntax highlighting.
+depend context
+depend context-filter
+containersize 10232
+doccontainersize 10908
+runfiles size=21
+ texmf-dist/tex/context/third/vim/2context.vim
+ texmf-dist/tex/context/third/vim/t-syntax-groups.mkiv
+ texmf-dist/tex/context/third/vim/t-syntax-highlight.mkiv
+ texmf-dist/tex/context/third/vim/t-syntax-highlight.mkxl
+ texmf-dist/tex/context/third/vim/t-vim.tex
+catalogue-also context-filter
+catalogue-ctan /macros/context/contrib/context-vim
+catalogue-license bsd
+catalogue-topics synt-hlt ext-code context
+
+name dvips
+category TLCore
+revision 77830
+shortdesc A DVI to PostScript driver
+longdesc This package has been withdrawn from CTAN, and bundled into the
+longdesc distributions' package sets. Development now takes place within
+longdesc the TeX Live framework, and it is no longer available as a
+longdesc separate package. For download, support, and other information,
+longdesc please see TeX Live.
+depend dvips.ARCH
+containersize 58076
+doccontainersize 530896
+runfiles size=138
+ texmf-dist/dvips/base/color.pro
+ texmf-dist/dvips/base/tex.pro
+ texmf-dist/dvips/config/config.ps
+ texmf-dist/fonts/enc/dvips/base/7t.enc
+ texmf-dist/tex/generic/dvips/blackdvi.sty
+ texmf-dist/tex/generic/dvips/blackdvi.tex
+ texmf-dist/tex/generic/dvips/colordvi.sty
+ texmf-dist/tex/generic/dvips/colordvi.tex
+ texmf-dist/tex/generic/dvips/rotate.sty
+ texmf-dist/tex/generic/dvips/rotate.tex
+catalogue-contact-bugs https://lists.tug.org/tex-k
+catalogue-contact-home https://tug.org/dvips
+catalogue-contact-repository https://tug.org/svn/texlive/trunk/Build/source/texk/dvipsk/
+catalogue-contact-support https://lists.tug.org/tex-k
+catalogue-license other-free
+catalogue-topics dvi-print
+
+name dvips.x86_64-linux
+category TLCore
+revision 79498
+shortdesc x86_64-linux files of dvips
+containersize 216388
+binfiles arch=x86_64-linux size=223
+ bin/x86_64-linux/afm2tfm
+ bin/x86_64-linux/dvips
+
+name fontspec
+category Package
+revision 79934
+shortdesc Advanced font selection in XeLaTeX and LuaLaTeX
+longdesc Fontspec is a package for XeLaTeX and LuaLaTeX. It provides an
+longdesc automatic and unified interface to feature-rich AAT and
+longdesc OpenType fonts through the NFSS in LaTeX running on XeTeX or
+longdesc LuaTeX engines.
+depend euenc
+depend iftex
+depend l3kernel
+depend l3packages
+depend lm
+depend xunicode
+containersize 28948
+doccontainersize 1218156
+srccontainersize 132868
+runfiles size=82
+ texmf-dist/tex/latex/fontspec/fontspec-luatex.sty
+ texmf-dist/tex/latex/fontspec/fontspec-xetex.sty
+ texmf-dist/tex/latex/fontspec/fontspec.cfg
+ texmf-dist/tex/latex/fontspec/fontspec.lua
+ texmf-dist/tex/latex/fontspec/fontspec.sty
+catalogue-contact-bugs https://github.com/latex3/fontspec/issues
+catalogue-contact-repository https://github.com/latex3/fontspec/
+catalogue-ctan /macros/unicodetex/latex/fontspec
+catalogue-license lppl1.3c
+catalogue-topics font-sel luatex tagged-pdf xetex
+catalogue-version 2.9h
+
+name geometry
+category Package
+revision 78315
+shortdesc Flexible and complete interface to document dimensions
+longdesc The package provides an easy and flexible user interface to
+longdesc customize page layout, implementing auto-centering and
+longdesc auto-balancing mechanisms so that the users have only to give
+longdesc the least description for the page layout.
+depend graphics
+depend iftex
+containersize 8212
+doccontainersize 653564
+srccontainersize 37400
+runfiles size=11
+ texmf-dist/tex/latex/geometry/geometry.sty
+catalogue-also vmargin typearea geometry-de
+catalogue-ctan /macros/latex/contrib/geometry
+catalogue-license lppl1.3c
+catalogue-topics geometry tagged-pdf
+catalogue-version 6.0
+
+name graphics
+category Package
+revision 79234
+catalogue latex-graphics
+shortdesc The LaTeX standard graphics bundle
+longdesc This is a collection of LaTeX packages for: producing colour;
+longdesc including graphics (eg. PostScript) files; rotation and scaling
+longdesc of text in LaTeX documents.
+depend epstopdf-pkg
+depend graphics-cfg
+depend graphics-def
+containersize 16040
+doccontainersize 2446748
+srccontainersize 57596
+runfiles size=36
+ texmf-dist/tex/latex/graphics/color.sty
+ texmf-dist/tex/latex/graphics/dvipdf.def
+ texmf-dist/tex/latex/graphics/epsfig.sty
+ texmf-dist/tex/latex/graphics/graphics-2017-06-25.sty
+ texmf-dist/tex/latex/graphics/graphics.sty
+ texmf-dist/tex/latex/graphics/graphicx.sty
+ texmf-dist/tex/latex/graphics/keyval.sty
+ texmf-dist/tex/latex/graphics/lscape.sty
+ texmf-dist/tex/latex/graphics/mathcolor.ltx
+ texmf-dist/tex/latex/graphics/rotating.sty
+ texmf-dist/tex/latex/graphics/trig.sty
+catalogue-contact-bugs https://www.latex-project.org/bugs/
+catalogue-contact-home https://www.latex-project.org/
+catalogue-ctan /macros/latex/required/graphics
+catalogue-license lppl1.3c
+catalogue-topics collection graphics
+
+name hyperref
+category Package
+revision 80357
+shortdesc Extensive support for hypertext in LaTeX
+longdesc The hyperref package is used to handle cross-referencing
+longdesc commands in LaTeX to produce hypertext links in the document.
+depend atbegshi
+depend auxhook
+depend bitset
+depend kvoptions
+depend url
+containersize 81652
+doccontainersize 1435784
+srccontainersize 171196
+runfiles size=200
+ texmf-dist/tex/latex/hyperref/backref.sty
+ texmf-dist/tex/latex/hyperref/hluatex.def
+ texmf-dist/tex/latex/hyperref/hpdftex.def
+ texmf-dist/tex/latex/hyperref/hxetex.def
+ texmf-dist/tex/latex/hyperref/hyperref.sty
+ texmf-dist/tex/latex/hyperref/nameref.sty
+ texmf-dist/tex/latex/hyperref/nohyperref.sty
+ texmf-dist/tex/latex/hyperref/ntheorem-hyper.sty
+ texmf-dist/tex/latex/hyperref/puenc.def
+ texmf-dist/tex/latex/hyperref/xr-hyper.sty
+catalogue-contact-bugs https://github.com/latex3/hyperref/issues
+catalogue-contact-home https://github.com/latex3/hyperref
+catalogue-ctan /macros/latex/contrib/hyperref
+catalogue-license lppl1.3
+catalogue-topics adobe-distiller etex form-fillin hyper pdf-feat tagged-pdf-partially
+catalogue-version 7.01r
+
+name hyphen-french
+category TLCore
+revision 78069
+shortdesc French hyphenation patterns.
+longdesc Hyphenation patterns for French in T1/EC and UTF-8 encodings.
+depend hyph-utf8
+depend hyphen-base
+execute AddHyphen 	name=french synonyms=patois,francais 	lefthyphenmin=2 	righthyphenmin=2 	file=loadhyph-fr.tex 	file_patterns=hyph-fr.pat.txt 	file_exceptions=
+containersize 11432
+runfiles size=16
+ texmf-dist/tex/generic/hyph-utf8/loadhyph/loadhyph-fr.tex
+ texmf-dist/tex/generic/hyph-utf8/patterns/ptex/hyph-fr.ec.tex
+ texmf-dist/tex/generic/hyph-utf8/patterns/quote/hyph-quote-fr.tex
+ texmf-dist/tex/generic/hyph-utf8/patterns/tex/hyph-fr.tex
+ texmf-dist/tex/generic/hyph-utf8/patterns/txt/hyph-fr.pat.txt
+
+name jsclasses
+category Package
+revision 77682
+shortdesc Classes tailored for use with Japanese
+longdesc Classes jsarticle, jsbook and jsreport are tailored for use
+longdesc with pLaTeX and upLaTeX.
+containersize 23848
+doccontainersize 432344
+srccontainersize 61172
+runfiles size=86
+ texmf-dist/tex/platex/jsclasses/jsarticle.cls
+ texmf-dist/tex/platex/jsclasses/jsbook.cls
+ texmf-dist/tex/platex/jsclasses/jslogo.sty
+ texmf-dist/tex/platex/jsclasses/jsreport.cls
+ texmf-dist/tex/platex/jsclasses/okumacro.sty
+catalogue-contact-repository https://github.com/texjporg/jsclasses
+catalogue-ctan /macros/jptex/latex/jsclasses
+catalogue-license bsd
+catalogue-topics japanese class tagged-pdf-incompatible
+
+name koma-script
+category TLCore
+revision 77575
+shortdesc A bundle of versatile classes and packages
+longdesc The KOMA-Script bundle provides replacements for the article,
+longdesc report, and book classes with emphasis on typography and
+longdesc versatility. There is also a letter class. The bundle also
+longdesc offers: a package for calculating type areas in the way laid
+longdesc down by the typographer Jan Tschichold, packages for easily
+longdesc changing and defining page styles, a package scrdate for
+longdesc getting not only the current date but also the name of the day,
+longdesc and a package scrtime for getting the current time.
+depend etoolbox
+depend xpatch
+containersize 6986176
+runfiles size=3984
+ texmf-dist/doc/latex/koma-script/README.md
+ texmf-dist/doc/latex/koma-script/examples/letter-example-00-en.tex
+ texmf-dist/doc/latex/koma-script/scrguide-en.pdf
+ texmf-dist/source/latex/koma-script/doc/scrguide-en.tex
+ texmf-dist/source/latex/koma-script/doc/scrguide.cls
+ texmf-dist/source/latex/koma-script/scrmain.ins
+ texmf-dist/source/latex/koma-script/typearea.dtx
+ texmf-dist/tex/latex/koma-script/DIN.lco
+ texmf-dist/tex/latex/koma-script/KOMAold.lco
+ texmf-dist/tex/latex/koma-script/scrartcl.cls
+ texmf-dist/tex/latex/koma-script/scrbase.sty
+ texmf-dist/tex/latex/koma-script/scrbook.cls
+ texmf-dist/tex/latex/koma-script/scrlayer-scrpage.sty
+ texmf-dist/tex/latex/koma-script/scrlayer.sty
+ texmf-dist/tex/latex/koma-script/scrlttr2.cls
+ texmf-dist/tex/latex/koma-script/scrreprt.cls
+ texmf-dist/tex/latex/koma-script/scrsize10pt.clo
+ texmf-dist/tex/latex/koma-script/tocbasic.sty
+ texmf-dist/tex/latex/koma-script/typearea.sty
+catalogue-also scrartcl scrbook
+catalogue-contact-development https://sourceforge.net/p/koma-script
+catalogue-contact-home https://komascript.de
+catalogue-contact-repository https://sourceforge.net/p/koma-script/code
+catalogue-ctan /macros/latex/contrib/koma-script
+catalogue-license lppl1.3c
+catalogue-topics class letter book-pub page-hf geometry float toc-etc legal notes addr-list date-time keyval package-mgmt io-mgmt
+catalogue-version 3.49.2
+
+name kpathsea
+category TLCore
+revision 79498
+shortdesc Path searching library for TeX-related files
+longdesc Generic path searching library for TeX-related files, used by
+longdesc most TeX programs.
+depend kpathsea.ARCH
+containersize 33684
+doccontainersize 1287828
+runfiles size=53
+ texmf-dist/web2c/fmtutil.cnf
+ texmf-dist/web2c/mktex.cnf
+ texmf-dist/web2c/texmf.cnf
+ texmf-dist/web2c/texmfcnf.lua
+catalogue-contact-home https://tug.org/kpathsea
+catalogue-contact-repository https://tug.org/svn/texlive/trunk/Build/source/texk/kpathsea/
+catalogue-license lgpl2.1
+catalogue-topics sys-supp
+
+name kpathsea.x86_64-linux
+category TLCore
+revision 79498
+shortdesc x86_64-linux files of kpathsea
+containersize 61320
+binfiles arch=x86_64-linux size=56
+ bin/x86_64-linux/kpseaccess
+ bin/x86_64-linux/kpsereadlink
+ bin/x86_64-linux/kpsestat
+ bin/x86_64-linux/kpsewhich
+ bin/x86_64-linux/mktexlsr
+ bin/x86_64-linux/texhash
+
+name latex-bin
+category TLCore
+revision 80015
+shortdesc LaTeX executables and man pages
+depend amsmath
+depend babel
+depend graphics
+depend latex
+depend latex-bin.ARCH
+depend latexconfig
+depend tools
+execute AddFormat name=pdflatex engine=pdftex           patterns=language.dat           options="-translate-file=cp227.tcx *pdflatex.ini"           fmttriggers=l3kernel,latex,firstaid,babel,cm,hyphen-base,knuth-lib,latex-fonts,tex-ini-files,unicode-data,dehyph,hyph-utf8
+containersize 604
+doccontainersize 49440
+
+name latexconfig
+category Package
+revision 68923
+shortdesc configuration files for LaTeX-related formats
+containersize 2240
+runfiles size=2
+ texmf-dist/tex/latex/latexconfig/epstopdf-sys.cfg
+ texmf-dist/tex/latex/latexconfig/lualatexiniconfig.tex
+
+name latexmk
+category Package
+revision 78335
+shortdesc Fully automated LaTeX document generation
+longdesc Latexmk is a Perl script which you just have to run once and it
+longdesc does everything else for you... completely automagically.
+depend latexmk.ARCH
+containersize 128868
+doccontainersize 575908
+runfiles size=139
+ texmf-dist/scripts/latexmk/latexmk.pl
+catalogue-also latexn prv arara
+catalogue-ctan /support/latexmk
+catalogue-license gpl2
+catalogue-topics compilation
+catalogue-version 4.88
+
+name latexmk.x86_64-linux
+category Package
+revision 10937
+shortdesc x86_64-linux files of latexmk
+containersize 340
+binfiles arch=x86_64-linux size=1
+ bin/x86_64-linux/latexmk
+
+name luamplib
+category Package
+revision 80346
+shortdesc Use LuaTeX's built-in MetaPost interpreter
+longdesc The package enables the user to specify MetaPost diagrams (which
+longdesc may include colour specifications from the color or xcolor
+longdesc packages) into a document, and process them using LuaTeX's
+longdesc built-in MetaPost interpreter.
+containersize 28420
+doccontainersize 162432
+srccontainersize 59988
+runfiles size=44
+ texmf-dist/tex/luatex/luamplib/luamplib.lua
+ texmf-dist/tex/luatex/luamplib/luamplib.sty
+catalogue-contact-bugs https://github.com/lualatex/luamplib/issues
+catalogue-contact-repository https://github.com/lualatex/luamplib
+catalogue-ctan /macros/luatex/generic/luamplib
+catalogue-license gpl2
+catalogue-topics graphics-in-tex luatex mp-use tagged-pdf
+catalogue-version 2.44.0
+
+name multirow
+category Package
+revision 77682
+shortdesc Create tabular cells spanning multiple rows
+longdesc The package has a lot of flexibility, including an option for
+longdesc specifying an entry at the "natural" width of its text.
+containersize 3236
+doccontainersize 284360
+srccontainersize 12552
+runfiles size=4
+ texmf-dist/tex/latex/multirow/bigdelim.sty
+ texmf-dist/tex/latex/multirow/bigstrut.sty
+ texmf-dist/tex/latex/multirow/multirow.sty
+catalogue-also bigstrut bigdelim
+catalogue-contact-bugs https://github.com/pietvo/multirow/issues
+catalogue-contact-repository https://github.com/pietvo/multirow
+catalogue-ctan /macros/latex/contrib/multirow
+catalogue-license lppl1.3
+catalogue-topics table tagged-pdf-incompatible
+catalogue-version 2.9
+
+name pgf
+category Package
+revision 79866
+shortdesc Create PostScript and PDF graphics in TeX
+longdesc PGF is a macro package for creating graphics. It is platform-
+longdesc and format-independent and works together with the most
+longdesc important TeX backend drivers, including pdfTeX and dvips. It
+longdesc comes with a user-friendly syntax layer called TikZ.
+depend atveryend
+depend fp
+depend graphics
+depend pdftexcmds
+depend xcolor
+containersize 818300
+doccontainersize 12485388
+runfiles size=1528
+ texmf-dist/tex/context/third/pgf/basiclayer/t-pgf.tex
+ texmf-dist/tex/context/third/pgf/frontendlayer/t-tikz.tex
+ texmf-dist/tex/generic/pgf/basiclayer/pgf.code.tex
+ texmf-dist/tex/generic/pgf/frontendlayer/tikz/tikz.code.tex
+ texmf-dist/tex/generic/pgf/utilities/pgfkeys.code.tex
+ texmf-dist/tex/latex/pgf/basiclayer/pgf.sty
+ texmf-dist/tex/latex/pgf/basiclayer/pgfcore.sty
+ texmf-dist/tex/latex/pgf/frontendlayer/tikz.sty
+ texmf-dist/tex/latex/pgf/utilities/pgfkeys.sty
+ texmf-dist/tex/latex/pgf/utilities/pgfrcs.sty
+ texmf-dist/tex/latex/pgf/utilities/xxcolor.sty
+ texmf-dist/tex/plain/pgf/basiclayer/pgf.tex
+ texmf-dist/tex/plain/pgf/frontendlayer/tikz.tex
+catalogue-alias tikz
+catalogue-contact-bugs https://github.com/pgf-tikz/pgf/issues
+catalogue-contact-repository https://github.com/pgf-tikz/pgf
+catalogue-ctan /graphics/pgf/base
+catalogue-license lppl1.3c gpl2 fdl
+catalogue-topics graphics graphics-in-tex pgf-tikz tagged-pdf-partially
+catalogue-version 3.1.12
+
+name scheme-medium
+category Scheme
+revision 54074
+shortdesc medium scheme (small + more packages and languages)
+relocated 1
+longdesc This is the medium TeX Live scheme: it contains everything in
+longdesc the small scheme, plus additional packages and languages.
+depend collection-basic
+depend collection-binextra
+depend collection-context
+depend collection-latex
+depend collection-latexrecommended
+depend collection-luatex
+depend collection-mathscience
+
+name siunitx
+category Package
+revision 80302
+shortdesc A comprehensive (SI) units package
+longdesc Typesetting values with units requires care to ensure that the
+longdesc combined mathematical meaning of the value plus unit
+longdesc combination is clear.
+containersize 52976
+doccontainersize 1004648
+srccontainersize 107828
+runfiles size=167
+ texmf-dist/tex/latex/siunitx/siunitx-abbreviations.cfg
+ texmf-dist/tex/latex/siunitx/siunitx-binary.cfg
+ texmf-dist/tex/latex/siunitx/siunitx-v2.sty
+ texmf-dist/tex/latex/siunitx/siunitx-version-1.cfg
+ texmf-dist/tex/latex/siunitx/siunitx.sty
+catalogue-contact-bugs https://github.com/josephwright/siunitx/issues
+catalogue-contact-home https://www.texdev.net
+catalogue-contact-repository https://github.com/josephwright/siunitx
+catalogue-ctan /macros/latex/contrib/siunitx
+catalogue-license lppl1.3c
+catalogue-topics scientific-docs tagged-pdf-partially units
+catalogue-version 3.6.2
+
+name texlive.infra
+category TLCore
+revision 79982
+shortdesc basic TeX Live infrastructure
+longdesc This package contains the files needed to get tlmgr running:
+longdesc perl modules, xz binaries, plus (sometimes) tar, wget, lz4, and
+longdesc various other support files.
+depend texlive.infra.ARCH
+containersize 461632
+runfiles size=354
+ LICENSE.CTAN
+ LICENSE.TL
+ tlpkg/TeXLive/TLConfig.pm
+ tlpkg/TeXLive/TLPDB.pm
+ texmf-dist/scripts/texlive/tlmgr.pl
+
+name texlive.infra.x86_64-linux
+category TLCore
+revision 77640
+shortdesc x86_64-linux files of texlive.infra
+containersize 168712
+binfiles arch=x86_64-linux size=139
+ bin/x86_64-linux/mktexlsr
+ bin/x86_64-linux/tlmgr
+
+name tools
+category Package
+revision 79234
+catalogue latex-tools
+shortdesc The LaTeX standard tools bundle
+longdesc A collection of (variously) simple tools provided as part of
+longdesc the LaTeX required tools distribution, comprising the packages:
+longdesc afterpage, array, bm, calc, dcolumn, delarray, enumerate,
+longdesc fileerr, fontsmpl, ftnright, hhline, indentfirst, layout,
+longdesc longtable, multicol, rawfonts, shellesc, showkeys, somedefs,
+longdesc tabularx, theorem, trace, varioref, verbatim, xr, and xspace.
+containersize 47420
+doccontainersize 4022640
+srccontainersize 114068
+runfiles size=154
+ texmf-dist/tex/latex/tools/.tex
+ texmf-dist/tex/latex/tools/afterpage.sty
+ texmf-dist/tex/latex/tools/array-2024-06-01.sty
+ texmf-dist/tex/latex/tools/array.sty
+ texmf-dist/tex/latex/tools/bm.sty
+ texmf-dist/tex/latex/tools/calc.sty
+ texmf-dist/tex/latex/tools/longtable.sty
+ texmf-dist/tex/latex/tools/multicol.sty
+ texmf-dist/tex/latex/tools/tabularx.sty
+ texmf-dist/tex/latex/tools/varioref.sty
+ texmf-dist/tex/latex/tools/xspace.sty
+catalogue-ctan /macros/latex/required/tools
+catalogue-license lppl1.3c
+catalogue-topics collection

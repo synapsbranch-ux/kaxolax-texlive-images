@@ -43,3 +43,11 @@ Chaque décision non triviale : contexte, décision, alternatives écartées (ci
 
 - Contexte : en CI, le premier `xelatex` de chaque conteneur prenait ~10 s, car `mktexfmt` reconstruisait `xelatex.fmt` dans `/tmp` (le second : 0,2 s). Chaque compilation tourne dans un conteneur neuf : ce serait 10 s de plus à chaque fois.
 - Décision : après tous les `tlmgr install`, `fmtutil-sys --missing` puis `mktexlsr` (kpathsea ne cherche les formats système que dans `ls-R`), et le build échoue si pdfLaTeX, XeLaTeX ou LuaLaTeX ne trouve pas son format avec `MKTEXFMT=0`.
+
+## 2026-10-01 · Index des packages généré depuis `texlive.tlpdb` au build, publié dans R2
+
+- Contexte : le gestionnaire de packages (tâche 10) a besoin de tous les packages de TeX Live et du package qui fournit chaque `.sty`/`.cls` (erreur « File `xyz.sty' not found »).
+- Décision : `scripts/package-index.py` (stdlib) lit la base installée dans une étape Docker `index` jetable ; seul `/usr/share/kaxolax/packages.json` entre dans l'image, sans python3. Le build échoue si l'année diffère, s'il y a moins de 1 000 packages ou si des styles de base manquent.
+- Périmètre : catégories `Package` et `ConTeXt`, plus les `TLCore` qui ont une fiche au catalogue CTAN ou un `.sty`/`.cls` (TeX Live y range koma-script, dvips, asymptote) ; `ctanUrl` vaut `null` sans fiche. Styles : runfiles `.sty`/`.cls` sous `tex/{latex,generic,xelatex,lualatex,xetex,luatex}` ; `tex/platex`, `tex/latex-dev`, `tex/plain`… restent lisibles (`TEXINPUTS` finit par `tex//`) mais ne sont pas indexés. TeX Live 2026 complet : 4 821 packages, 1,9 Mo.
+- Publication : un job séparé (après le lint et les deux images, permission `actions: read` seule) dans l'environnement GitHub `r2-package-index` (déploiement limité à `main`, seul détenteur des secrets R2, absents du dépôt : une autre branche ne peut pas les lire en modifiant le workflow) publie l'index de l'image `full` sous `texlive/<année>/packages.json`, et chaque variante sous `texlive/<année>/<variante>/`. GitHub crée l'environnement sans règle au premier run : le job échoue tant que la règle n'est pas exactement `main`.
+- Écartés : le catalogue CTAN interrogé à l'exécution (réseau, ne reflète pas l'image), `tlmgr info --json` (Perl dans l'étape, sortie bien plus lourde).

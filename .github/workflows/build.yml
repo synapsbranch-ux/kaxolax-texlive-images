@@ -35,7 +35,9 @@ jobs:
       - run: >-
           docker run --rm -i -v "$PWD/.hadolint.yaml:/.config/hadolint.yaml"
           hadolint/hadolint:v2.14.0 hadolint --config /.config/hadolint.yaml - < Dockerfile
-      - run: python3 -m py_compile tests/run_cases.py
+      - run: python3 -m py_compile tests/run_cases.py tests/test_package_index.py scripts/package-index.py
+      - name: Unit tests (package index)
+        run: python3 -m unittest discover -s tests -p 'test_*.py' -v
       - run: >-
           docker run --rm -v "$PWD:/repo" -w /repo zricethezav/gitleaks:v8.30.1
           git /repo --redact --verbose --exit-code 1
@@ -75,6 +77,30 @@ jobs:
             --build-arg "TEXLIVE_SCHEME=${{ matrix.scheme }}" \
             --tag "${tag}" .
           docker image ls "${tag}"
+
+      # Index des packages généré au build (étape index du Dockerfile), extrait sans lancer l'image.
+      - name: Extract package index
+        run: |
+          file="packages-${{ matrix.scheme }}.json"
+          cid=$(docker create "$LOCAL_TAG")
+          docker cp "${cid}:/usr/share/kaxolax/packages.json" "$file"
+          docker rm "$cid" >/dev/null
+          summary=$(python3 - "$file" <<'PY'
+          import json, sys
+          index = json.load(open(sys.argv[1], encoding="utf-8"))
+          print("Package index (%s): TeX Live %s, %d packages, %d style files" % (
+              sys.argv[1], index["texliveYear"], len(index["packages"]), len(index["byStyle"])))
+          PY
+          )
+          echo "$summary" | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload package index
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: package-index-${{ matrix.scheme }}
+          path: packages-${{ matrix.scheme }}.json
+          if-no-files-found: error
+          retention-days: 30
 
       - name: Font diagnostics
         run: |
@@ -138,3 +164,97 @@ jobs:
             docker tag "$LOCAL_TAG" "${image}:${tag}"
             docker push "${image}:${tag}"
           done
+
+  # Index des packages publié dans R2 (lu par l'API), après le succès du lint (dont les tests
+  # unitaires du générateur) et des deux variantes. Les secrets R2_ACCESS_KEY_ID et
+  # R2_SECRET_ACCESS_KEY et les variables R2_ENDPOINT et R2_PUBLIC_BUCKET sont ceux de
+  # l'environnement r2-package-index, dont la règle de déploiement n'admet que main : un push sur une
+  # autre branche qui modifierait ce job (en retirant le `if`) n'y a pas accès. Sans ces secrets et
+  # variables, la publication est sautée avec un avis ; sans la règle, le job échoue.
+  package-index:
+    name: publish package index (R2)
+    needs: [lint, image]
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    environment: r2-package-index
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    # Ni checkout ni contenu du dépôt : actions: read sert seulement à lire la règle de
+    # l'environnement (les artefacts du run passent par ACTIONS_RUNTIME_TOKEN).
+    permissions:
+      actions: read
+    steps:
+      # GitHub crée sans aucune règle un environnement référencé qui n'existe pas : le premier run sur
+      # main crée donc r2-package-index ouvert à toutes les branches. Ce contrôle ne protège pas d'une
+      # branche malveillante (qui peut le retirer), mais il signale la configuration dangereuse avant
+      # que des secrets y soient posés.
+      - name: Check r2-package-index deployment rule
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          api="repos/${GITHUB_REPOSITORY}/environments/r2-package-index"
+          # null : toutes les branches ; protected_branches : toute branche protégée.
+          if ! custom=$(gh api "$api" --jq '.deployment_branch_policy.custom_branch_policies // false'); then
+            echo "::error title=Package index::cannot read the r2-package-index environment"
+            exit 1
+          fi
+          policies=""
+          if [[ "$custom" == "true" ]]; then
+            if ! policies=$(gh api "${api}/deployment-branch-policies" \
+              --jq '[.branch_policies[] | (.type // "branch") + ":" + .name] | join(" ")'); then
+              echo "::error title=Package index::cannot read the deployment rules of r2-package-index"
+              exit 1
+            fi
+          fi
+          if [[ "$policies" != "branch:main" ]]; then
+            echo "::error title=Package index::the r2-package-index environment must only allow the main branch (Settings > Environments > Deployment branches and tags: Selected branches and tags = main); found: ${policies:-no branch restriction}. Fix it before adding R2 secrets."
+            exit 1
+          fi
+          echo "r2-package-index deployment rule: main only"
+
+      - name: Check R2 configuration
+        id: r2
+        env:
+          R2_ENDPOINT: ${{ vars.R2_ENDPOINT }}
+          R2_PUBLIC_BUCKET: ${{ vars.R2_PUBLIC_BUCKET }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+        run: |
+          if [[ -n "$R2_ENDPOINT" && -n "$R2_PUBLIC_BUCKET" && -n "$R2_ACCESS_KEY_ID" && -n "$R2_SECRET_ACCESS_KEY" ]]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice title=Package index::R2 is not configured in the r2-package-index environment (R2_ENDPOINT, R2_PUBLIC_BUCKET, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY), index not published"
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Download package indexes
+        if: steps.r2.outputs.configured == 'true'
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          pattern: package-index-*
+          merge-multiple: true
+          path: package-index
+
+      - name: Publish to R2
+        if: steps.r2.outputs.configured == 'true'
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          # R2 : région « auto », et sommes de contrôle seulement quand l'API S3 les exige (les
+          # sommes CRC envoyées par défaut depuis AWS CLI 2.23 ne sont pas toutes acceptées par R2).
+          AWS_DEFAULT_REGION: auto
+          AWS_REQUEST_CHECKSUM_CALCULATION: when_required
+          AWS_RESPONSE_CHECKSUM_VALIDATION: when_required
+          R2_ENDPOINT: ${{ vars.R2_ENDPOINT }}
+          R2_PUBLIC_BUCKET: ${{ vars.R2_PUBLIC_BUCKET }}
+        run: |
+          publish() {
+            aws s3 cp "$1" "s3://${R2_PUBLIC_BUCKET}/$2" --endpoint-url "$R2_ENDPOINT" \
+              --content-type 'application/json; charset=utf-8' \
+              --cache-control 'public, max-age=3600' --only-show-errors
+            echo "Published $1 as $2"
+          }
+          for scheme in medium full; do
+            publish "package-index/packages-${scheme}.json" "texlive/${TEXLIVE_YEAR}/${scheme}/packages.json"
+          done
+          # Index de référence servi par l'API : celui de l'image full, qui contient tous les packages.
+          publish package-index/packages-full.json "texlive/${TEXLIVE_YEAR}/packages.json"

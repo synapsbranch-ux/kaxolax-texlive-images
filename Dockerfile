@@ -17,6 +17,24 @@ COPY install/install-texlive.sh /usr/local/sbin/install-texlive.sh
 RUN TEXLIVE_YEAR="${TEXLIVE_YEAR}" TEXLIVE_SCHEME="${TEXLIVE_SCHEME}" \
   TEXLIVE_REPOSITORY="${TEXLIVE_REPOSITORY}" /usr/local/sbin/install-texlive.sh
 
+# Index des packages (JSON) généré depuis la base texlive.tlpdb de l'installation, dans une étape
+# jetable : python3 n'entre pas dans l'image finale, qui ne reçoit que le JSON. Le build échoue si
+# la base est mal lue (trop peu de packages, styles de base absents, année différente) ;
+# scrartcl.cls vérifie que les packages de catégorie TLCore (koma-script) sont bien indexés.
+FROM ${DEBIAN_IMAGE} AS index
+ARG TEXLIVE_YEAR=2026
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends python3 \
+  && rm -rf /var/lib/apt/lists/*
+COPY --from=installer /usr/local/texlive/${TEXLIVE_YEAR}/tlpkg/texlive.tlpdb /tmp/texlive.tlpdb
+COPY scripts/package-index.py /usr/local/bin/package-index.py
+RUN python3 /usr/local/bin/package-index.py /tmp/texlive.tlpdb \
+  --texlive-year "${TEXLIVE_YEAR}" \
+  --min-packages 1000 \
+  --require-style amsmath.sty --require-style graphicx.sty --require-style hyperref.sty \
+  --require-style scrartcl.cls \
+  --output /packages.json
+
 FROM ${DEBIAN_IMAGE} AS runtime
 ARG TEXLIVE_YEAR=2026
 ARG TEXLIVE_SCHEME=medium
@@ -79,6 +97,9 @@ RUN cat /tmp/kaxolax-texmf.cnf "/usr/local/texlive/${TEXLIVE_YEAR}/texmf.cnf" > 
   && PAR_GLOBAL_TEMP=/var/cache/biber/cache setpriv --reuid=1000 --regid=1000 --clear-groups \
     /usr/local/texlive/bin/biber --version \
   && chmod 0600 /etc/passwd /etc/group
+
+# Copié après les caches de polices : une modification du script d'index ne les reconstruit pas.
+COPY --from=index /packages.json /usr/share/kaxolax/packages.json
 
 LABEL org.opencontainers.image.title="kaxolax-texlive" \
   org.opencontainers.image.description="TeX Live ${TEXLIVE_YEAR} (${TEXLIVE_SCHEME}) for the Kaxolax compile sandbox" \
