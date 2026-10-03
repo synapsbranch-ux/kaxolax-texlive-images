@@ -2,7 +2,8 @@
 
 # Image TeX Live du sandbox de compilation Kaxolax.
 #   docker build --build-arg TEXLIVE_YEAR=2026 --build-arg TEXLIVE_SCHEME=medium -t kaxolax-texlive:2026-medium .
-# Variantes : medium (développement local) et full (staging).
+# Variantes : medium (développement local et production, conteneur de compilation Cloudflare)
+# et full (toute la distribution, construite pour comparaison).
 
 ARG DEBIAN_IMAGE=debian:trixie-20260918-slim@sha256:a99cfc517144bc59b1978475ec53b46ecabec7e43635402ee5b77cc54cd1b20a
 
@@ -11,8 +12,9 @@ ARG TEXLIVE_YEAR=2026
 ARG TEXLIVE_SCHEME=medium
 ARG TEXLIVE_REPOSITORY=
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends ca-certificates curl gnupg perl xz-utils \
+  && apt-get install -y --no-install-recommends ca-certificates curl gnupg libfontconfig1 perl xz-utils \
   && rm -rf /var/lib/apt/lists/*
+# libfontconfig1 : xetex en a besoin pour construire son format pendant l'installation.
 COPY install/install-texlive.sh /usr/local/sbin/install-texlive.sh
 RUN TEXLIVE_YEAR="${TEXLIVE_YEAR}" TEXLIVE_SCHEME="${TEXLIVE_SCHEME}" \
   TEXLIVE_REPOSITORY="${TEXLIVE_REPOSITORY}" /usr/local/sbin/install-texlive.sh

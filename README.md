@@ -4,8 +4,8 @@ Images Docker TeX Live utilisées par le sandbox de compilation de **Kaxolax**.
 
 | Variante | Usage                          | Architecture             | Tag                    |
 | -------- | ------------------------------ | ------------------------ | ---------------------- |
-| `medium` | développement local (WSL2)     | amd64                    | `kaxolax-texlive:2026-medium` |
-| `full`   | worker de staging (c7g.large)  | arm64                    | `kaxolax-texlive:2026-full`   |
+| `medium` | développement local et production (conteneur de compilation Cloudflare) | amd64 | `kaxolax-texlive:2026-medium` |
+| `full`   | toute la distribution, construite pour comparaison                       | amd64 | `kaxolax-texlive:2026-full`   |
 
 Contenu de l'image :
 
@@ -158,7 +158,7 @@ Cloudflare R2 (`aws s3 cp --endpoint-url`, `Cache-Control: public, max-age=3600`
 
 | Clé                                        | Contenu                                                            |
 | ------------------------------------------ | ------------------------------------------------------------------ |
-| `texlive/<année>/packages.json`            | index de référence, lu par l'API : image `full`, tous les packages |
+| `texlive/<année>/packages.json`            | index de référence, lu par l'API : image `medium`, celle de la production |
 | `texlive/<année>/<variante>/packages.json` | index de chaque variante (`medium`, `full`)                        |
 
 Configuration du dépôt GitHub (Settings → Environments), dans cet ordre :
@@ -170,8 +170,10 @@ Configuration du dépôt GitHub (Settings → Environments), dans cet ordre :
 2. Vérifier ou poser la règle « Deployment branches and tags » = « Selected branches and tags »,
    avec la seule règle de branche `main`, **avant** d'ajouter les secrets.
 3. Y définir les secrets `R2_ACCESS_KEY_ID` et `R2_SECRET_ACCESS_KEY` (jeton R2 « Object Read &
-   Write » limité à ce bucket) et les variables `R2_ENDPOINT`
-   (`https://<compte>.r2.cloudflarestorage.com`) et `R2_PUBLIC_BUCKET`.
+   Write » limité à ce bucket : sortie `texlive_publish` de kaxolax-infra) et les variables
+   `R2_ENDPOINT` (`https://<compte>.eu.r2.cloudflarestorage.com` : les buckets sont dans la
+   juridiction UE, voir `terraform output r2_s3_endpoint`) et `R2_PUBLIC_BUCKET`
+   (`kaxolax-templates` : l'index est publié sous le préfixe `texlive/` du bucket public).
 
 Ces secrets ne doivent pas exister au niveau du dépôt : tout workflow de n'importe quelle branche
 pourrait les lire, alors que seul un job de `main` reçoit ceux de l'environnement. Le job commence par
@@ -186,10 +188,10 @@ est sautée avec un avis dans le run.
 `.github/workflows/build.yml` :
 
 - lint : shellcheck, hadolint, gitleaks, tests unitaires de l'index des packages ;
-- build des deux variantes, chacune sur sa propre architecture : `medium` en amd64, `full` en arm64 sur un runner ARM natif ;
+- build des deux variantes en linux/amd64 (architecture des conteneurs Cloudflare) ;
 - index des packages extrait de chaque image et attaché comme artefact ;
 - tests de fumée et suite malveillante, sous runc puis sous gVisor ;
-- sur `main`, publication sur GHCR, puis sur ECR si la variable `AWS_ECR_PUSH_ROLE_ARN` est définie (rôle OIDC créé par `kaxolax-infra`, avec la variable `AWS_REGION`) ;
+- sur `main`, publication sur GHCR ; l'empreinte (`sha256:…`) de chaque image est écrite dans le résumé du run, pour l'épingler dans kaxolax-platform et kaxolax-templates ;
 - sur `main`, une fois le lint et les deux variantes réussis, publication de l'index des packages dans R2 depuis l'environnement `r2-package-index`, après contrôle de sa règle de déploiement (voir « Index des packages »).
 
 Une reconstruction hebdomadaire récupère les correctifs de sécurité Debian.

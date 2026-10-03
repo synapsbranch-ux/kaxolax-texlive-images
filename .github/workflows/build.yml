@@ -49,14 +49,14 @@ jobs:
     permissions:
       contents: read
       packages: write
-      id-token: write
     strategy:
       fail-fast: false
       matrix:
         include:
-          # medium : développement local (WSL2, amd64). full : worker de staging (c7g, arm64).
+          # medium : développement local et production (conteneur de compilation Cloudflare,
+          # linux/amd64). full : toute la distribution, construite pour comparaison.
           - { scheme: medium, arch: amd64, runner: ubuntu-24.04 }
-          - { scheme: full, arch: arm64, runner: ubuntu-24.04-arm }
+          - { scheme: full, arch: amd64, runner: ubuntu-24.04 }
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -142,28 +142,9 @@ jobs:
             docker tag "$LOCAL_TAG" "${image}:${tag}"
             docker push "${image}:${tag}"
           done
-
-      # ECR : actif dès que kaxolax-infra a créé le rôle OIDC et que la variable du repo est posée.
-      - name: Configure AWS credentials (OIDC)
-        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && vars.AWS_ECR_PUSH_ROLE_ARN != ''
-        uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
-        with:
-          role-to-assume: ${{ vars.AWS_ECR_PUSH_ROLE_ARN }}
-          aws-region: ${{ vars.AWS_REGION }}
-
-      - name: Log in to ECR
-        id: ecr
-        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && vars.AWS_ECR_PUSH_ROLE_ARN != ''
-        uses: aws-actions/amazon-ecr-login@03f1aad4c6c7ffd436567f42f9384779290529bd # v2.1.7
-
-      - name: Publish to ECR
-        if: steps.ecr.outcome == 'success'
-        run: |
-          image="${{ steps.ecr.outputs.registry }}/kaxolax-texlive"
-          for tag in "${TEXLIVE_YEAR}-${{ matrix.scheme }}" "${TEXLIVE_YEAR}-${{ matrix.scheme }}-${GITHUB_SHA::7}"; do
-            docker tag "$LOCAL_TAG" "${image}:${tag}"
-            docker push "${image}:${tag}"
-          done
+          # Empreinte à reporter dans kaxolax-platform et kaxolax-templates (image épinglée).
+          digest=$(docker inspect --format '{{index .RepoDigests 0}}' "${image}:${TEXLIVE_YEAR}-${{ matrix.scheme }}")
+          echo "Image publiée : \`${digest}\`" | tee -a "$GITHUB_STEP_SUMMARY"
 
   # Index des packages publié dans R2 (lu par l'API), après le succès du lint (dont les tests
   # unitaires du générateur) et des deux variantes. Les secrets R2_ACCESS_KEY_ID et
@@ -256,5 +237,6 @@ jobs:
           for scheme in medium full; do
             publish "package-index/packages-${scheme}.json" "texlive/${TEXLIVE_YEAR}/${scheme}/packages.json"
           done
-          # Index de référence servi par l'API : celui de l'image full, qui contient tous les packages.
-          publish package-index/packages-full.json "texlive/${TEXLIVE_YEAR}/packages.json"
+          # Index de référence servi par l'API : celui de l'image medium, celle de la production, pour
+          # ne proposer que des packages réellement installés.
+          publish package-index/packages-medium.json "texlive/${TEXLIVE_YEAR}/packages.json"

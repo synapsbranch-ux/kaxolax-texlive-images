@@ -3,7 +3,7 @@
 #
 # Variables :
 #   TEXLIVE_YEAR        année de TeX Live (ex. 2026), obligatoire
-#   TEXLIVE_SCHEME      medium (dev) ou full (staging), obligatoire
+#   TEXLIVE_SCHEME      medium (dev et production) ou full, obligatoire
 #   TEXLIVE_REPOSITORY  dépôt tlnet à utiliser (facultatif) ; par défaut, l'archive historique figée
 #                       si l'année est terminée, sinon le dépôt courant via mirror.ctan.org
 set -euo pipefail
