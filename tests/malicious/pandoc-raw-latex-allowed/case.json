@@ -1,0 +1,11 @@
+{
+  "description": "pandoc : LaTeX brut autorisé (option rawLatex) : pandoc le recopie sans le lire ni l'exécuter, et la compilation du résultat reste bloquée par le sandbox (/etc/passwd illisible, shell escape désactivé).",
+  "convert": { "mode": "document", "rawLatex": true, "compile": "pdflatex" },
+  "timeoutSeconds": 60,
+  "expect": {
+    "status": ["failure"],
+    "texContains": ["\\input{/etc/passwd}", "\\immediate\\write18{echo KX-$((40+2))-PWNED > pwned.txt}"],
+    "absentFiles": ["pwned.txt", "inline.txt"],
+    "noLeak": ["root:x:0:0", "KX-42-PWNED"]
+  }
+}

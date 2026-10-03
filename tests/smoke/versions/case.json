@@ -1,12 +1,12 @@
 {
-  "description": "Tous les outils attendus sont présents et s'exécutent dans le sandbox.",
+  "description": "Tous les outils attendus (dont pandoc, pour la conversion Markdown → LaTeX) sont présents et s'exécutent dans le sandbox.",
   "command": [
     "sh",
     "-c",
-    "pdflatex --version && xelatex --version && lualatex --version && bibtex --version && biber --version && latexmk -v && synctex help view"
+    "pdflatex --version && xelatex --version && lualatex --version && bibtex --version && biber --version && latexmk -v && synctex help view && pandoc --version"
   ],
   "expect": {
     "status": ["success"],
-    "outputContains": ["pdfTeX", "XeTeX", "LuaHBTeX", "BibTeX", "biber version", "Latexmk", "synctex view"]
+    "outputContains": ["pdfTeX", "XeTeX", "LuaHBTeX", "BibTeX", "biber version", "Latexmk", "synctex view", "pandoc 3.12"]
   }
 }

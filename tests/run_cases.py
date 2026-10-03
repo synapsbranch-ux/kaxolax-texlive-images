@@ -2,7 +2,9 @@
 """Rejoue une suite de cas (smoke ou malicious) contre une image TeX Live, dans le sandbox Kaxolax.
 
 Chaque cas est un dossier contenant case.json et les fichiers du projet. Le conteneur est lancé
-avec exactement les règles du sandbox de l'agent de compilation (voir SANDBOX_FLAGS).
+avec exactement les règles du sandbox de l'agent de compilation (voir SANDBOX_FLAGS). Un cas est
+une compilation (`compiler`), une commande (`command`) ou une conversion Markdown → LaTeX
+(`convert` : pandoc lancé comme par l'agent sur input.md, puis compilation facultative du résultat).
 
     python3 tests/run_cases.py --image kaxolax-texlive:2026-medium tests/smoke tests/malicious
 """
@@ -31,6 +33,55 @@ LOG_CAP_BYTES = 10 * MIB
 FSIZE_LIMIT_BYTES = PDF_CAP_BYTES + MIB
 
 COMPILER_FLAGS = {"pdflatex": "-pdf", "xelatex": "-xelatex", "lualatex": "-lualatex"}
+
+# Conversion Markdown → LaTeX : mêmes constantes que l'agent de compilation (convertCommand de
+# apps/compile-agent/src/convert.ts dans kaxolax-platform).
+PANDOC_DATA_DIR = "/usr/share/kaxolax/pandoc"
+PANDOC_FILTER = f"{PANDOC_DATA_DIR}/kaxolax-convert.lua"
+PANDOC_HEAP = "-M512m"
+CONVERT_OPTIONS_FILE = "kaxolax-convert.json"
+CONVERT_INPUT = "input.md"
+CONVERT_OUTPUT = "output.tex"
+CONVERT_MEDIA_DIR = "media"
+TOP_LEVEL_DIVISIONS = ("section", "chapter", "part")
+CITATION_METHODS = ("natbib", "biblatex")
+
+
+def pandoc_command(convert: dict) -> list[str]:
+    """Commande pandoc de l'agent : constante, sauf des valeurs choisies dans des listes fermées."""
+    reader = "markdown" if convert.get("rawLatex") else "markdown-raw_tex-raw_attribute-raw_html"
+    command = [
+        "pandoc", "+RTS", PANDOC_HEAP, "-RTS",
+        "--sandbox", f"--data-dir={PANDOC_DATA_DIR}", f"--lua-filter={PANDOC_FILTER}",
+        f"--from={reader}", "--to=latex", "--standalone", "--wrap=preserve",
+        f"--variable=documentclass:{convert.get('documentClass', 'article')}",
+    ]
+    division = convert.get("topLevelDivision")
+    if division in TOP_LEVEL_DIVISIONS:
+        command.append(f"--top-level-division={division}")
+    # Fragment : toujours numéroté, sinon le préambule retirerait la numérotation du document hôte.
+    if convert.get("numberSections") or convert.get("mode") == "fragment":
+        command.append("--number-sections")
+    # Citations `[@clé]` : commandes natbib ou biblatex (jamais citeproc), natbib par défaut.
+    citations = convert.get("citations", "natbib")
+    if citations not in CITATION_METHODS:
+        raise ValueError(f"unknown citation method {citations!r}")
+    command.append(f"--{citations}")
+    return [*command, f"--output={CONVERT_OUTPUT}", CONVERT_INPUT]
+
+
+def prepare_convert(workdir: Path, convert: dict) -> None:
+    """Fichier d'options du filtre Lua et répertoire des images extraites, comme l'agent."""
+    options = {
+        "sourceDir": convert.get("sourceDir", ""),
+        "graphicsDir": convert.get("graphicsDir", ""),
+        "mediaDir": convert.get("mediaDir", "media"),
+        "maxEmbedded": convert.get("maxEmbedded", 50),
+        "marker": uuid.uuid4().hex,
+        "fragment": convert.get("mode", "document") == "fragment",
+    }
+    (workdir / CONVERT_OPTIONS_FILE).write_text(json.dumps(options))
+    (workdir / CONVERT_MEDIA_DIR).mkdir(exist_ok=True)
 
 
 def sandbox_flags(runtime: str) -> list[str]:
@@ -168,8 +219,10 @@ def run_case(case_dir: Path, image: str, runtime: str) -> CaseResult:
         canary = parent / "host-canary.txt"
         canary_content = f"KX-HOST-CANARY-{uuid.uuid4().hex}"
         canary.write_text(canary_content + "\n")
-        for path in workdir.rglob("*.tex"):
+        for path in [*workdir.rglob("*.tex"), *workdir.rglob("*.md")]:
             path.write_text(path.read_text().replace("@@HOST_CANARY@@", str(canary)))
+        if "convert" in spec:
+            prepare_convert(workdir, spec["convert"])
         for path in [workdir, *workdir.rglob("*")]:
             path.chmod(0o777 if path.is_dir() else 0o666)
         no_leak = [marker.replace("@@HOST_CANARY_CONTENT@@", canary_content) for marker in expect.get("noLeak", [])]
@@ -177,6 +230,20 @@ def run_case(case_dir: Path, image: str, runtime: str) -> CaseResult:
         if "command" in spec:
             run = run_in_sandbox(image, runtime, workdir, spec["command"], timeout_s)
             status = run.status
+        elif "convert" in spec:
+            run = run_in_sandbox(image, runtime, workdir, pandoc_command(spec["convert"]), timeout_s)
+            status = run.status
+            if status == "success" and not (workdir / CONVERT_OUTPUT).is_file():
+                status = "failure"
+            # Le LaTeX produit doit compiler (même commande que les compilations du projet).
+            compiler = spec["convert"].get("compile")
+            if status == "success" and compiler:
+                command = [
+                    "latexmk", "-norc", "-cd", "-f", "-jobname=output", "-interaction=batchmode",
+                    "-file-line-error", COMPILER_FLAGS[compiler], CONVERT_OUTPUT,
+                ]
+                compiled = run_in_sandbox(image, runtime, workdir, command, timeout_s)
+                status = compile_status(compiled, workdir)
         else:
             compiler = spec["compiler"]
             main = spec.get("main", "main.tex")
@@ -205,6 +272,25 @@ def run_case(case_dir: Path, image: str, runtime: str) -> CaseResult:
         for text in expect.get("logLacks", []):
             if text in log:
                 result.failures.append(f"output.log contains {text!r}")
+        tex_path = workdir / CONVERT_OUTPUT
+        tex = tex_path.read_text(errors="replace") if "convert" in spec and tex_path.exists() else ""
+        for text in expect.get("texContains", []):
+            if text not in tex:
+                result.failures.append(f"{CONVERT_OUTPUT} lacks {text!r}")
+        for text in expect.get("texLacks", []):
+            if text in tex:
+                result.failures.append(f"{CONVERT_OUTPUT} contains {text!r}")
+        report_path = workdir / "kaxolax-report.json"
+        report = report_path.read_text(errors="replace") if report_path.exists() else ""
+        for text in expect.get("reportContains", []):
+            if text not in report:
+                result.failures.append(f"kaxolax-report.json lacks {text!r}")
+        for text, count in expect.get("reportCounts", {}).items():
+            if report.count(text) != count:
+                result.failures.append(f"kaxolax-report.json has {report.count(text)} x {text!r}, not {count}")
+        for text in expect.get("reportLacks", []):
+            if text in report:
+                result.failures.append(f"kaxolax-report.json contains {text!r}")
         for relative in expect.get("files", []):
             if not (workdir / relative).is_file():
                 result.failures.append(f"missing file {relative}")

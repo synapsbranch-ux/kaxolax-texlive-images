@@ -1,0 +1,12 @@
+{
+  "description": "pandoc : LaTeX brut (\\input, \\write18, bloc {=latex}) refusé par défaut : extensions raw_tex, raw_attribute et raw_html désactivées, le texte est échappé. Le LaTeX produit compile sans rien exécuter.",
+  "convert": { "mode": "document", "compile": "pdflatex" },
+  "timeoutSeconds": 60,
+  "expect": {
+    "status": ["success"],
+    "texContains": ["\\textbackslash"],
+    "texLacks": ["\\input{/etc/passwd}", "\\write18{", "<script>"],
+    "absentFiles": ["pwned.txt", "inline.txt"],
+    "noLeak": ["root:x:0:0", "KX-42-PWNED"]
+  }
+}

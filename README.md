@@ -12,6 +12,7 @@ Contenu de l'image :
 - Debian trixie slim (épinglée par digest) et TeX Live installé par `install-tl`, l'année étant un argument de build.
 - `medium` = `scheme-medium` + `collection-latexextra` + `collection-bibtexextra` + `collection-fontsrecommended`.
 - pdflatex, xelatex, lualatex, bibtex, biber, latexmk et synctex.
+- pandoc 3.12 (binaire statique officiel, empreinte vérifiée) et son filtre Lua contrôlé, pour la conversion Markdown → LaTeX (voir « Conversion Markdown → LaTeX »).
 - Polices Noto (dont CJK) et Liberation pour XeLaTeX et LuaLaTeX. Les polices OpenType de TeX Live sont visibles par fontconfig.
 - `texmf.cnf` durci (`openin_any = p`, `openout_any = p`, `shell_escape = f`).
 - Utilisateur UID 1000, `HOME=/tmp`. Caches de polices (fontconfig, luaotfload) construits au build.
@@ -75,6 +76,15 @@ Chaque cas doit échouer proprement, sans rien laisser fuiter :
 | `latexmkrc-perl`                            | `latexmkrc` (Perl) fourni par le projet               | `latexmk -norc`                                            |
 | `project-texmf-cnf`                         | `texmf.cnf` du projet qui réactive shell escape       | le répertoire courant n'est pas dans `TEXMFCNF`            |
 | `bibtex-absolute`, `biber-absolute`         | base bibliographique `/etc/passwd`                    | fichier illisible pour l'UID 1000                          |
+| `pandoc-read-files`                         | images `/etc/passwd`, `../../`, fichier de l'hôte, `file://` | `--sandbox`, filtre Kaxolax (texte alternatif à la place) |
+| `pandoc-raw-latex`                          | `\input`, `\write18`, bloc `{=latex}`, HTML brut       | extensions `raw_tex`, `raw_attribute`, `raw_html` désactivées |
+| `pandoc-raw-latex-allowed`                  | les mêmes avec l'option `rawLatex`                     | recopiés sans être lus ; la compilation reste bloquée par le sandbox |
+| `pandoc-math-latex`                         | `\input`, `\write18`, `\directlua` dans `$…$`, `$$…$$` et `header-includes` | recopiés sans échappement (formules) ; la compilation reste bloquée par le sandbox |
+| `pandoc-filters`                            | filtre, défauts et modèle du projet (YAML, `templates/`, `defaults/`) | commande constante, `--data-dir` de l'image |
+| `pandoc-extract-media`                      | images `data:` (nom `../`, SVG, HTML), image hors projet | seuls PNG, JPEG et PDF extraits, sous `media/<sha1>.<ext>` |
+| `pandoc-remote-resources`                   | images et bibliographie distantes (métadonnées du cloud) | `--sandbox`, pas de `--citeproc`, `--network none` ; images changées en liens |
+| `pandoc-citation-keys`                      | clés `@{…}` contenant `\input`, `\write18`, `%` (biblatex) | filtre Kaxolax : citation laissée en texte échappé, clé signalée |
+| `pandoc-yaml-bomb`                          | bombe YAML (alias imbriqués)                          | tas plafonné (`+RTS -M512m`) et délai                       |
 
 **Attention, TeX Live 2026 :** `openin_any` n'a plus aucun effet. TeX Live l'a supprimé en
 décembre 2025 (voir les commentaires de `texmf-dist/web2c/texmf.cnf`). TeX et Lua peuvent donc
@@ -85,6 +95,64 @@ lire tout fichier présent dans l'image. La protection en lecture repose sur deu
 
 La valeur `openin_any = p` reste dans `texmf.cnf` : elle est sans effet, mais elle s'appliquerait
 à une année antérieure.
+
+## Conversion Markdown → LaTeX (pandoc)
+
+L'agent de compilation (`apps/compile-agent` de kaxolax-platform, opération `convert`) lance pandoc
+dans le sandbox de compilation, avec les mêmes règles qu'une compilation (aucun réseau, UID 1000,
+racine en lecture seule, limites de mémoire, de processus et de taille de fichier, délai). Le
+répertoire de travail ne contient que `input.md`, `kaxolax-convert.json` (options du filtre) et
+`media/`. La commande est constante, à des valeurs de listes fermées près (classe, découpage,
+`--natbib` ou `--biblatex`) :
+
+```bash
+pandoc +RTS -M512m -RTS --sandbox --data-dir=/usr/share/kaxolax/pandoc \
+  --lua-filter=/usr/share/kaxolax/pandoc/kaxolax-convert.lua \
+  --from=markdown-raw_tex-raw_attribute-raw_html --to=latex --standalone --wrap=preserve \
+  --variable=documentclass:article --natbib --output=output.tex input.md
+```
+
+- Version : pandoc 3.12, archive officielle des releases GitHub, empreinte SHA-256 vérifiée par
+  `ADD --checksum` (amd64 et arm64) ; seul le binaire `pandoc` est installé (`/usr/local/bin`).
+- `--sandbox` : les lecteurs et rédacteurs de pandoc ne lisent aucun fichier ni URL (images,
+  inclusions). `+RTS -M512m` : tas plafonné (une bombe YAML échoue au lieu d'épuiser la mémoire).
+- `--data-dir` : répertoire de l'image (`pandoc/` du dépôt), en lecture seule ; aucun modèle,
+  défaut ou filtre ne vient du projet ni du répertoire personnel.
+- Filtres : seul `pandoc/kaxolax-convert.lua` s'exécute. `--sandbox` ne couvre pas les filtres Lua,
+  d'où un filtre minimal : il ne lit que son fichier d'options, n'appelle
+  `pandoc.mediabag.fetch` que sur une URI `data:` (décodée en mémoire) et n'écrit que
+  `media/<sha1>.<ext>` et `kaxolax-report.json`. Il réécrit les chemins des images (relatifs au
+  fichier Markdown → relatifs au document principal), change les images distantes en liens,
+  remplace les chemins absolus ou hors du projet par leur texte alternatif, extrait les images
+  `data:` PNG, JPEG et PDF (plafond de fichiers distincts : une image répétée ne compte pas), et
+  encadre le corps de deux marqueurs aléatoires (fragment).
+- Citations `[@clé]` : commandes natbib ou biblatex (`--natbib`, `--biblatex`), jamais
+  `--citeproc`. pandoc recopie les clés telles quelles, même `@{x\input{…}}` : le filtre ne garde
+  que les clés de l'alphabet sûr (lettres, chiffres, `_:.-+/`) ; la citation d'une autre clé reste
+  du texte échappé et la clé est rapportée (`rejectedCitations`, cas `pandoc-citation-keys`).
+- LaTeX brut du texte : échappé par défaut. Avec `rawLatex`, il est recopié tel quel. Dans tous
+  les cas, pandoc recopie sans échappement le contenu des formules (`$…$`, `$$…$$`), y compris
+  dans les métadonnées YAML (`header-includes`, titre) : `$\input{…}$` ou
+  `$$\directlua{…}$$` passent même sans `rawLatex`. Le LaTeX produit n'est donc jamais digne de
+  confiance et le sandbox de compilation est la seule barrière (cas `pandoc-math-latex`).
+- `--extract-media` n'est pas utilisé : sous `--sandbox`, pandoc n'extrait rien ; le filtre écrit
+  lui-même les images intégrées, sous un nom dérivé de leur contenu.
+
+Smoke tests : `tests/smoke/pandoc-markdown` convertit un Markdown riche puis compile le résultat
+avec pdfLaTeX ; `pandoc-citations` compile des citations natbib avec BibTeX ;
+`pandoc-embedded-limit` vérifie le plafond des images `data:` (une image répétée ne compte pas). Les cas `convert` de `case.json` (voir `tests/run_cases.py`) rejouent la commande de
+l'agent.
+
+### Tester l'agent sans reconstruire TeX Live
+
+L'étape `pandoc-overlay` ajoute pandoc, le filtre et la suite malveillante à jour à une image TeX
+Live existante (développement local, tests d'intégration de l'agent ; jamais en production) :
+
+```bash
+docker build --target pandoc-overlay --build-arg PANDOC_OVERLAY_BASE=kaxolax-texlive:2026-medium \
+  -t kaxolax-texlive-pandoc:2026-medium .
+python3 tests/run_cases.py --image kaxolax-texlive-pandoc:2026-medium --only pandoc tests/smoke tests/malicious
+```
 
 ## Index des packages
 

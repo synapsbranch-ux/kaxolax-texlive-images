@@ -1,0 +1,13 @@
+{
+  "description": "pandoc : images data: (nom imposé par ../, SVG, HTML) et image hors du projet : seules les images PNG, JPEG et PDF sont extraites, sous media/<sha1>.<ext> ; aucune écriture ailleurs.",
+  "convert": { "mode": "fragment", "mediaDir": "chapters/media", "graphicsDir": "" },
+  "timeoutSeconds": 30,
+  "expect": {
+    "status": ["success"],
+    "files": ["media/1630582cb4d9471b8d5c8ee5048ddc5b6b0662f8.png"],
+    "absentFiles": ["escape.png", "media/escape.png"],
+    "texContains": ["{chapters/media/1630582cb4d9471b8d5c8ee5048ddc5b6b0662f8.png}"],
+    "texLacks": ["data:", "outside.png", "escape.png"],
+    "reportContains": ["unsupported_type", "outside_project"]
+  }
+}

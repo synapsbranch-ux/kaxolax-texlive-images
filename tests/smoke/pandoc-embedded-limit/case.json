@@ -1,0 +1,33 @@
+{
+  "description": "pandoc : plafond des images data: extraites (ici 2). Une image répétée (même contenu, déjà écrite dans media/) ne compte pas et reste une image ; seule une nouvelle image au-delà du plafond est remplacée par son texte. Le LaTeX produit compile.",
+  "convert": {
+    "mode": "document",
+    "maxEmbedded": 2,
+    "compile": "pdflatex"
+  },
+  "timeoutSeconds": 60,
+  "expect": {
+    "status": [
+      "success"
+    ],
+    "files": [
+      "media/f675cd548cfa86fd62d794988b0d387f215a623d.png",
+      "media/8193600e22db7bf38e29ee3c995230ce05a3e37c.png",
+      "output.pdf"
+    ],
+    "absentFiles": [
+      "media/5c3997201702e9d97f0236823cc9390230d7abde.png"
+    ],
+    "reportCounts": {
+      "\"kind\":\"embedded\"": 3,
+      "too_many_embedded": 1
+    },
+    "texContains": [
+      "{media/f675cd548cfa86fd62d794988b0d387f215a623d.png}",
+      "{media/8193600e22db7bf38e29ee3c995230ce05a3e37c.png}"
+    ],
+    "texLacks": [
+      "5c3997201702e9d97f0236823cc9390230d7abde"
+    ]
+  }
+}

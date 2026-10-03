@@ -1,0 +1,19 @@
+{
+  "description": "pandoc : citations [@clé] rendues en commandes natbib (--natbib, jamais citeproc ni du texte), bibliographie du projet (refs.bib) résolue par BibTeX à la compilation par pdfLaTeX.",
+  "convert": { "mode": "document", "citations": "natbib", "compile": "pdflatex" },
+  "timeoutSeconds": 90,
+  "expect": {
+    "status": ["success"],
+    "files": ["output.tex", "output.pdf", "output.bbl"],
+    "texContains": [
+      "\\usepackage[]{natbib}",
+      "\\citep[p.~3]{knuth84}",
+      "\\citet{lamport94}",
+      "\\citeyearpar{lamport94}",
+      "\\bibliography{refs"
+    ],
+    "texLacks": ["{[}@knuth84"],
+    "reportContains": ["\"citations\":[\"knuth84\",\"lamport94\"]", "\"rejectedCitations\":[]"],
+    "logLacks": ["undefined", "Undefined control sequence"]
+  }
+}

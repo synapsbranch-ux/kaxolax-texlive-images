@@ -1,0 +1,12 @@
+{
+  "description": "pandoc : filtres, fichier de défauts et modèle fournis par le projet (métadonnées YAML, templates/, defaults/) : ignorés, seul le filtre de l'image s'exécute (--data-dir de l'image, commande constante).",
+  "convert": { "mode": "document" },
+  "timeoutSeconds": 30,
+  "expect": {
+    "status": ["success"],
+    "texContains": ["Aucun filtre ni modèle"],
+    "texLacks": ["KX-EVIL-TEMPLATE"],
+    "absentFiles": ["pwned.txt", "pwned-exec.txt"],
+    "noLeak": ["KX-EVIL-FILTER"]
+  }
+}

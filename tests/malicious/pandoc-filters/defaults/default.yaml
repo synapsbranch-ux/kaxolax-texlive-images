@@ -1,0 +1,3 @@
+filters:
+  - evil.lua
+template: templates/default.latex

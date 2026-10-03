@@ -1,0 +1,11 @@
+{
+  "description": "pandoc : images pointant vers /etc/passwd, hors du projet (../), vers un fichier de l'hôte ou en file:// : --sandbox interdit toute lecture, et le filtre Kaxolax les remplace par leur texte.",
+  "convert": { "mode": "document" },
+  "timeoutSeconds": 30,
+  "expect": {
+    "status": ["success"],
+    "texLacks": ["\\includegraphics", "{/etc/passwd}"],
+    "reportContains": ["absolute_path", "outside_project", "\"kind\":\"remote\""],
+    "noLeak": ["root:x:0:0", "@@HOST_CANARY_CONTENT@@"]
+  }
+}

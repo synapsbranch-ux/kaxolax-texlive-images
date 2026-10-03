@@ -1,0 +1,9 @@
+{
+  "description": "pandoc : bombe YAML (alias imbriqués, ~3,8e8 nœuds) : arrêtée par le tas plafonné (+RTS -M512m) ou par le délai.",
+  "convert": { "mode": "document" },
+  "timeoutSeconds": 20,
+  "expect": {
+    "status": ["failure", "timeout"],
+    "absentFiles": ["output.tex"]
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "description": "pandoc : Markdown riche (titres, listes, tâches, formules, tableau, code coloré, note, citation, image du projet et image data:) converti en document LaTeX complet, puis compilé par pdfLaTeX.",
+  "convert": { "mode": "document", "documentClass": "article", "compile": "pdflatex" },
+  "timeoutSeconds": 60,
+  "expect": {
+    "status": ["success"],
+    "files": ["output.tex", "output.pdf", "media/1630582cb4d9471b8d5c8ee5048ddc5b6b0662f8.png"],
+    "texContains": [
+      "\\section{Introduction}",
+      "\\footnote{Le texte de la note.}",
+      "\\begin{longtable}",
+      "\\begin{Shaded}",
+      "\\int_0^1 x^2",
+      "{figures/plot.png}",
+      "{media/1630582cb4d9471b8d5c8ee5048ddc5b6b0662f8.png}",
+      "\\title{Conversion Markdown}",
+      "%KAXOLAX-BODY-BEGIN-"
+    ],
+    "reportContains": ["\"kind\":\"project\"", "\"kind\":\"embedded\""],
+    "logLacks": ["Undefined control sequence", "not found"]
+  }
+}

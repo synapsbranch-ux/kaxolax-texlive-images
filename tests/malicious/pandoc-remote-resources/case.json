@@ -1,0 +1,11 @@
+{
+  "description": "pandoc : images et bibliographie distantes (métadonnées du cloud, URL externes) : rien n'est téléchargé (--sandbox, pas de --citeproc, aucun réseau) ; les images deviennent des liens.",
+  "convert": { "mode": "document" },
+  "timeoutSeconds": 30,
+  "expect": {
+    "status": ["success"],
+    "texContains": ["\\href{http://169.254.169.254/latest/meta-data/iam}"],
+    "texLacks": ["\\includegraphics"],
+    "reportContains": ["\"kind\":\"remote\""]
+  }
+}

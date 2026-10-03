@@ -1,0 +1,36 @@
+{
+  "description": "pandoc : sans rawLatex, le contenu des formules ($…$, $$…$$) et des métadonnées YAML (titre, header-includes) est recopié sans échappement. \\input, \\write18 et \\directlua arrivent donc dans le LaTeX produit ; leur compilation (LuaLaTeX) reste bloquée par le sandbox : /etc/passwd illisible, shell escape et commandes Lua désactivés.",
+  "convert": {
+    "mode": "document",
+    "compile": "lualatex"
+  },
+  "timeoutSeconds": 90,
+  "expect": {
+    "status": [
+      "success",
+      "failure"
+    ],
+    "texContains": [
+      "\\(\\immediate\\write18{touch inline.txt}\\)",
+      "\\directlua{texio.write_nl(\"KX-LUA-EXEC=\" .. tostring(os.execute(\"touch lua.txt\")))}",
+      "\\immediate\\write18{touch yaml.txt}",
+      "\\immediate\\write18{touch title.txt}",
+      "\\catcode`\\%=12 \\immediate\\write18{touch display.txt}",
+      "\\(\\input{/etc/passwd}\\)"
+    ],
+    "absentFiles": [
+      "title.txt",
+      "yaml.txt",
+      "yaml-lua.txt",
+      "inline.txt",
+      "lua.txt",
+      "display.txt"
+    ],
+    "noLeak": [
+      "root:x:0:0"
+    ],
+    "logContains": [
+      "KX-LUA-EXEC="
+    ]
+  }
+}

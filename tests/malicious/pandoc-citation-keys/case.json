@@ -1,0 +1,13 @@
+{
+  "description": "pandoc : clés de citation qui injecteraient du LaTeX dans \\autocite{…} (--biblatex), syntaxe @{…} : le filtre Kaxolax les refuse, la citation reste du texte échappé et la clé est signalée. Le LaTeX produit compile sans rien exécuter.",
+  "convert": { "mode": "document", "citations": "biblatex", "compile": "pdflatex" },
+  "timeoutSeconds": 90,
+  "expect": {
+    "status": ["success", "failure"],
+    "texContains": ["\\autocite{knuth84}", "\\textbackslash"],
+    "texLacks": ["\\input{/etc/passwd}", "\\write18{", "{k%z}"],
+    "reportContains": ["\"citations\":[\"knuth84\"]", "k%z"],
+    "absentFiles": ["pwned.txt"],
+    "noLeak": ["root:x:0:0", "@@HOST_CANARY_CONTENT@@"]
+  }
+}

@@ -51,3 +51,26 @@ Chaque décision non triviale : contexte, décision, alternatives écartées (ci
 - Périmètre : catégories `Package` et `ConTeXt`, plus les `TLCore` qui ont une fiche au catalogue CTAN ou un `.sty`/`.cls` (TeX Live y range koma-script, dvips, asymptote) ; `ctanUrl` vaut `null` sans fiche. Styles : runfiles `.sty`/`.cls` sous `tex/{latex,generic,xelatex,lualatex,xetex,luatex}` ; `tex/platex`, `tex/latex-dev`, `tex/plain`… restent lisibles (`TEXINPUTS` finit par `tex//`) mais ne sont pas indexés. TeX Live 2026 complet : 4 821 packages, 1,9 Mo.
 - Publication : un job séparé (après le lint et les deux images, permission `actions: read` seule) dans l'environnement GitHub `r2-package-index` (déploiement limité à `main`, seul détenteur des secrets R2, absents du dépôt : une autre branche ne peut pas les lire en modifiant le workflow) publie l'index de l'image `full` sous `texlive/<année>/packages.json`, et chaque variante sous `texlive/<année>/<variante>/`. GitHub crée l'environnement sans règle au premier run : le job échoue tant que la règle n'est pas exactement `main`.
 - Écartés : le catalogue CTAN interrogé à l'exécution (réseau, ne reflète pas l'image), `tlmgr info --json` (Perl dans l'étape, sortie bien plus lourde).
+
+## 2026-10-03 · pandoc dans l'image, binaire officiel épinglé par empreinte
+
+- Contexte : la conversion Markdown → LaTeX (étape 3, tâche 5) tourne dans le sandbox de compilation, jamais dans l'API. Le pandoc de Debian trixie (3.1.11) est ancien et une version apt épinglée disparaît de l'archive.
+- Décision : pandoc 3.12, archive statique officielle des releases GitHub, `ADD --checksum` (amd64 et arm64). La release ne publie pas d'empreintes : elles ont été calculées au téléchargement et recoupées avec le binaire du `.deb` de la même release (même SHA-256). Seul `pandoc` est installé, pas `pandoc-server`.
+- Écartés : paquet Debian (version ancienne, non épinglable), image `pandoc/core` (Alpine, autre base).
+
+## 2026-10-03 · Conversion pandoc : `--sandbox`, filtre Lua unique et contrôlé
+
+- `--sandbox` empêche pandoc de lire fichiers et URL, mais ne couvre ni les filtres Lua ni `--extract-media` (qui, sous sandbox, n'extrait plus rien). Un seul filtre, `pandoc/kaxolax-convert.lua` de l'image : il ne décode que des URI `data:`, n'écrit que `media/<sha1>.<ext>` et `kaxolax-report.json`, et réécrit les chemins d'images.
+- Commande constante (`--data-dir` de l'image, aucun modèle, défaut ni filtre du projet), tas plafonné `+RTS -M512m`, mêmes règles de conteneur qu'une compilation. LaTeX brut du texte échappé par défaut ; autorisé, il reste compilé dans le sandbox. Le contenu des formules (métadonnées YAML comprises) est toujours recopié tel quel : le sandbox de compilation est la seule barrière (cas `pandoc-math-latex`).
+- Cas malveillants `pandoc-*` (lecture de fichiers, LaTeX brut, filtres et modèles du projet, images `data:`, ressources distantes, bombe YAML) et smoke test compilé.
+
+## 2026-10-03 · Étape `pandoc-overlay`
+
+- Contexte : reconstruire TeX Live (15 min, miroirs CTAN et Debian) pour tester l'agent avec pandoc est inutilement coûteux.
+- Décision : l'étape `--target pandoc-overlay` ajoute à une image existante le même `/out` (binaire et filtre), la suite malveillante à jour et `chmod 0600 /etc/passwd /etc/group`. Développement et tests seulement : l'image publiée reste l'étape `runtime`.
+
+## 2026-10-03 · Filtre pandoc : citations et plafond des images intégrées
+
+- Les citations `[@clé]` sont rendues par natbib ou biblatex (`--natbib`/`--biblatex`, liste fermée de l'agent) ; `--citeproc` reste exclu (pas de lecture de bibliographie ni de réseau pendant la conversion).
+- pandoc écrit les clés telles quelles dans `\citep{…}`/`\autocite{…}`, y compris la syntaxe `@{…}` qui accepte du LaTeX : le filtre refuse toute clé hors de l'alphabet sûr (lettres, chiffres, `_:.-+/`), la citation reste du texte échappé et la clé est rapportée (`rejectedCitations`).
+- Plafond des images `data:` : il porte sur les fichiers écrits ; une image répétée (même SHA-1, déjà dans `media/`) est décodée puis réutilisée sans compter, au lieu d'être remplacée par son texte une fois le plafond atteint.
