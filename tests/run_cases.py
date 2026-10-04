@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""Rejoue une suite de cas (smoke ou malicious) contre une image TeX Live, dans le sandbox Kaxolax.
+"""Rejoue une suite de cas (smoke ou malicious) contre une image TeX Live, dans le sandbox Tex.ink.
 
 Chaque cas est un dossier contenant case.json et les fichiers du projet. Le conteneur est lancé
 avec exactement les règles du sandbox de l'agent de compilation (voir SANDBOX_FLAGS). Un cas est
 une compilation (`compiler`), une commande (`command`) ou une conversion Markdown → LaTeX
 (`convert` : pandoc lancé comme par l'agent sur input.md, puis compilation facultative du résultat).
 
-    python3 tests/run_cases.py --image kaxolax-texlive:2026-medium tests/smoke tests/malicious
+    python3 tests/run_cases.py --image texink-texlive:2026-medium tests/smoke tests/malicious
 """
 
 from __future__ import annotations
@@ -35,11 +35,11 @@ FSIZE_LIMIT_BYTES = PDF_CAP_BYTES + MIB
 COMPILER_FLAGS = {"pdflatex": "-pdf", "xelatex": "-xelatex", "lualatex": "-lualatex"}
 
 # Conversion Markdown → LaTeX : mêmes constantes que l'agent de compilation (convertCommand de
-# apps/compile-agent/src/convert.ts dans kaxolax-platform).
-PANDOC_DATA_DIR = "/usr/share/kaxolax/pandoc"
-PANDOC_FILTER = f"{PANDOC_DATA_DIR}/kaxolax-convert.lua"
+# apps/compile-agent/src/convert.ts dans texink-platform).
+PANDOC_DATA_DIR = "/usr/share/texink/pandoc"
+PANDOC_FILTER = f"{PANDOC_DATA_DIR}/texink-convert.lua"
 PANDOC_HEAP = "-M512m"
-CONVERT_OPTIONS_FILE = "kaxolax-convert.json"
+CONVERT_OPTIONS_FILE = "texink-convert.json"
 CONVERT_INPUT = "input.md"
 CONVERT_OUTPUT = "output.tex"
 CONVERT_MEDIA_DIR = "media"
@@ -122,7 +122,7 @@ class CaseResult:
 
 def run_in_sandbox(image: str, runtime: str, workdir: Path, command: list[str], timeout_s: float) -> RunResult:
     """Lance un conteneur neuf, attend sa fin ou le tue au bout du timeout, puis le supprime."""
-    name = f"kaxolax-test-{uuid.uuid4().hex[:12]}"
+    name = f"texink-test-{uuid.uuid4().hex[:12]}"
     args = [
         "docker", "run", "--detach", "--name", name,
         *sandbox_flags(runtime),
@@ -209,7 +209,7 @@ def run_case(case_dir: Path, image: str, runtime: str) -> CaseResult:
     expect = spec.get("expect", {})
     timeout_s = spec.get("timeoutSeconds", 60)
 
-    with tempfile.TemporaryDirectory(prefix=f"kaxolax-{case_dir.name}-") as tmp:
+    with tempfile.TemporaryDirectory(prefix=f"texink-{case_dir.name}-") as tmp:
         parent = Path(tmp)
         parent.chmod(0o755)
         workdir = parent / "work"
@@ -280,17 +280,17 @@ def run_case(case_dir: Path, image: str, runtime: str) -> CaseResult:
         for text in expect.get("texLacks", []):
             if text in tex:
                 result.failures.append(f"{CONVERT_OUTPUT} contains {text!r}")
-        report_path = workdir / "kaxolax-report.json"
+        report_path = workdir / "texink-report.json"
         report = report_path.read_text(errors="replace") if report_path.exists() else ""
         for text in expect.get("reportContains", []):
             if text not in report:
-                result.failures.append(f"kaxolax-report.json lacks {text!r}")
+                result.failures.append(f"texink-report.json lacks {text!r}")
         for text, count in expect.get("reportCounts", {}).items():
             if report.count(text) != count:
-                result.failures.append(f"kaxolax-report.json has {report.count(text)} x {text!r}, not {count}")
+                result.failures.append(f"texink-report.json has {report.count(text)} x {text!r}, not {count}")
         for text in expect.get("reportLacks", []):
             if text in report:
-                result.failures.append(f"kaxolax-report.json contains {text!r}")
+                result.failures.append(f"texink-report.json contains {text!r}")
         for relative in expect.get("files", []):
             if not (workdir / relative).is_file():
                 result.failures.append(f"missing file {relative}")

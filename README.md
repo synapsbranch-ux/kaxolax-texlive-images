@@ -1,11 +1,11 @@
-# kaxolax-texlive-images
+# texink-texlive-images
 
-Images Docker TeX Live utilisées par le sandbox de compilation de **Kaxolax**.
+Images Docker TeX Live utilisées par le sandbox de compilation de **Tex.ink**.
 
 | Variante | Usage                          | Architecture             | Tag                    |
 | -------- | ------------------------------ | ------------------------ | ---------------------- |
-| `medium` | développement local et production (conteneur de compilation Cloudflare) | amd64 | `kaxolax-texlive:2026-medium` |
-| `full`   | toute la distribution, construite pour comparaison                       | amd64 | `kaxolax-texlive:2026-full`   |
+| `medium` | développement local et production (conteneur de compilation Cloudflare) | amd64 | `texink-texlive:2026-medium` |
+| `full`   | toute la distribution, construite pour comparaison                       | amd64 | `texink-texlive:2026-full`   |
 
 Contenu de l'image :
 
@@ -16,8 +16,8 @@ Contenu de l'image :
 - Polices Noto (dont CJK) et Liberation pour XeLaTeX et LuaLaTeX. Les polices OpenType de TeX Live sont visibles par fontconfig.
 - `texmf.cnf` durci (`openin_any = p`, `openout_any = p`, `shell_escape = f`).
 - Utilisateur UID 1000, `HOME=/tmp`. Caches de polices (fontconfig, luaotfload) construits au build.
-- La suite de tests malveillants est copiée dans `/usr/share/kaxolax/malicious`, pour que l'agent de compilation la rejoue.
-- L'index des packages TeX Live de l'image est dans `/usr/share/kaxolax/packages.json` (voir « Index des packages »).
+- La suite de tests malveillants est copiée dans `/usr/share/texink/malicious`, pour que l'agent de compilation la rejoue.
+- L'index des packages TeX Live de l'image est dans `/usr/share/texink/packages.json` (voir « Index des packages »).
 
 ## Prérequis
 
@@ -28,7 +28,7 @@ Contenu de l'image :
 ## Construire
 
 ```bash
-docker build --build-arg TEXLIVE_YEAR=2026 --build-arg TEXLIVE_SCHEME=medium -t kaxolax-texlive:2026-medium .
+docker build --build-arg TEXLIVE_YEAR=2026 --build-arg TEXLIVE_SCHEME=medium -t texink-texlive:2026-medium .
 ```
 
 Comptez environ 15 minutes pour `medium` et plus d'une heure pour `full`. `TEXLIVE_REPOSITORY`
@@ -38,8 +38,8 @@ figée pour une année terminée, sinon `mirror.ctan.org`.
 L'image `medium` est aussi publiée sur GHCR à chaque build de `main` :
 
 ```bash
-docker pull ghcr.io/synapsbranch-ux/kaxolax-texlive:2026-medium
-docker tag ghcr.io/synapsbranch-ux/kaxolax-texlive:2026-medium kaxolax-texlive:2026-medium
+docker pull ghcr.io/synapsbranch-ux/texink-texlive:2026-medium
+docker tag ghcr.io/synapsbranch-ux/texink-texlive:2026-medium texink-texlive:2026-medium
 ```
 
 ## Tester
@@ -53,9 +53,9 @@ Chaque cas lance un conteneur neuf avec exactement les règles du sandbox de l'a
 - timeout suivi de `docker kill`.
 
 ```bash
-python3 tests/run_cases.py --image kaxolax-texlive:2026-medium tests/smoke tests/malicious
-python3 tests/run_cases.py --image kaxolax-texlive:2026-medium --runtime runsc tests/malicious   # gVisor
-python3 tests/run_cases.py --image kaxolax-texlive:2026-medium --only lua tests/malicious        # filtre
+python3 tests/run_cases.py --image texink-texlive:2026-medium tests/smoke tests/malicious
+python3 tests/run_cases.py --image texink-texlive:2026-medium --runtime runsc tests/malicious   # gVisor
+python3 tests/run_cases.py --image texink-texlive:2026-medium --only lua tests/malicious        # filtre
 ```
 
 ### Suite de tests malveillants (`tests/malicious`)
@@ -76,14 +76,14 @@ Chaque cas doit échouer proprement, sans rien laisser fuiter :
 | `latexmkrc-perl`                            | `latexmkrc` (Perl) fourni par le projet               | `latexmk -norc`                                            |
 | `project-texmf-cnf`                         | `texmf.cnf` du projet qui réactive shell escape       | le répertoire courant n'est pas dans `TEXMFCNF`            |
 | `bibtex-absolute`, `biber-absolute`         | base bibliographique `/etc/passwd`                    | fichier illisible pour l'UID 1000                          |
-| `pandoc-read-files`                         | images `/etc/passwd`, `../../`, fichier de l'hôte, `file://` | `--sandbox`, filtre Kaxolax (texte alternatif à la place) |
+| `pandoc-read-files`                         | images `/etc/passwd`, `../../`, fichier de l'hôte, `file://` | `--sandbox`, filtre Tex.ink (texte alternatif à la place) |
 | `pandoc-raw-latex`                          | `\input`, `\write18`, bloc `{=latex}`, HTML brut       | extensions `raw_tex`, `raw_attribute`, `raw_html` désactivées |
 | `pandoc-raw-latex-allowed`                  | les mêmes avec l'option `rawLatex`                     | recopiés sans être lus ; la compilation reste bloquée par le sandbox |
 | `pandoc-math-latex`                         | `\input`, `\write18`, `\directlua` dans `$…$`, `$$…$$` et `header-includes` | recopiés sans échappement (formules) ; la compilation reste bloquée par le sandbox |
 | `pandoc-filters`                            | filtre, défauts et modèle du projet (YAML, `templates/`, `defaults/`) | commande constante, `--data-dir` de l'image |
 | `pandoc-extract-media`                      | images `data:` (nom `../`, SVG, HTML), image hors projet | seuls PNG, JPEG et PDF extraits, sous `media/<sha1>.<ext>` |
 | `pandoc-remote-resources`                   | images et bibliographie distantes (métadonnées du cloud) | `--sandbox`, pas de `--citeproc`, `--network none` ; images changées en liens |
-| `pandoc-citation-keys`                      | clés `@{…}` contenant `\input`, `\write18`, `%` (biblatex) | filtre Kaxolax : citation laissée en texte échappé, clé signalée |
+| `pandoc-citation-keys`                      | clés `@{…}` contenant `\input`, `\write18`, `%` (biblatex) | filtre Tex.ink : citation laissée en texte échappé, clé signalée |
 | `pandoc-yaml-bomb`                          | bombe YAML (alias imbriqués)                          | tas plafonné (`+RTS -M512m`) et délai                       |
 
 **Attention, TeX Live 2026 :** `openin_any` n'a plus aucun effet. TeX Live l'a supprimé en
@@ -98,16 +98,16 @@ La valeur `openin_any = p` reste dans `texmf.cnf` : elle est sans effet, mais el
 
 ## Conversion Markdown → LaTeX (pandoc)
 
-L'agent de compilation (`apps/compile-agent` de kaxolax-platform, opération `convert`) lance pandoc
+L'agent de compilation (`apps/compile-agent` de texink-platform, opération `convert`) lance pandoc
 dans le sandbox de compilation, avec les mêmes règles qu'une compilation (aucun réseau, UID 1000,
 racine en lecture seule, limites de mémoire, de processus et de taille de fichier, délai). Le
-répertoire de travail ne contient que `input.md`, `kaxolax-convert.json` (options du filtre) et
+répertoire de travail ne contient que `input.md`, `texink-convert.json` (options du filtre) et
 `media/`. La commande est constante, à des valeurs de listes fermées près (classe, découpage,
 `--natbib` ou `--biblatex`) :
 
 ```bash
-pandoc +RTS -M512m -RTS --sandbox --data-dir=/usr/share/kaxolax/pandoc \
-  --lua-filter=/usr/share/kaxolax/pandoc/kaxolax-convert.lua \
+pandoc +RTS -M512m -RTS --sandbox --data-dir=/usr/share/texink/pandoc \
+  --lua-filter=/usr/share/texink/pandoc/texink-convert.lua \
   --from=markdown-raw_tex-raw_attribute-raw_html --to=latex --standalone --wrap=preserve \
   --variable=documentclass:article --natbib --output=output.tex input.md
 ```
@@ -118,10 +118,10 @@ pandoc +RTS -M512m -RTS --sandbox --data-dir=/usr/share/kaxolax/pandoc \
   inclusions). `+RTS -M512m` : tas plafonné (une bombe YAML échoue au lieu d'épuiser la mémoire).
 - `--data-dir` : répertoire de l'image (`pandoc/` du dépôt), en lecture seule ; aucun modèle,
   défaut ou filtre ne vient du projet ni du répertoire personnel.
-- Filtres : seul `pandoc/kaxolax-convert.lua` s'exécute. `--sandbox` ne couvre pas les filtres Lua,
+- Filtres : seul `pandoc/texink-convert.lua` s'exécute. `--sandbox` ne couvre pas les filtres Lua,
   d'où un filtre minimal : il ne lit que son fichier d'options, n'appelle
   `pandoc.mediabag.fetch` que sur une URI `data:` (décodée en mémoire) et n'écrit que
-  `media/<sha1>.<ext>` et `kaxolax-report.json`. Il réécrit les chemins des images (relatifs au
+  `media/<sha1>.<ext>` et `texink-report.json`. Il réécrit les chemins des images (relatifs au
   fichier Markdown → relatifs au document principal), change les images distantes en liens,
   remplace les chemins absolus ou hors du projet par leur texte alternatif, extrait les images
   `data:` PNG, JPEG et PDF (plafond de fichiers distincts : une image répétée ne compte pas), et
@@ -149,9 +149,9 @@ L'étape `pandoc-overlay` ajoute pandoc, le filtre et la suite malveillante à j
 Live existante (développement local, tests d'intégration de l'agent ; jamais en production) :
 
 ```bash
-docker build --target pandoc-overlay --build-arg PANDOC_OVERLAY_BASE=kaxolax-texlive:2026-medium \
-  -t kaxolax-texlive-pandoc:2026-medium .
-python3 tests/run_cases.py --image kaxolax-texlive-pandoc:2026-medium --only pandoc tests/smoke tests/malicious
+docker build --target pandoc-overlay --build-arg PANDOC_OVERLAY_BASE=texink-texlive:2026-medium \
+  -t texink-texlive-pandoc:2026-medium .
+python3 tests/run_cases.py --image texink-texlive-pandoc:2026-medium --only pandoc tests/smoke tests/malicious
 ```
 
 ## Index des packages
@@ -163,14 +163,14 @@ erreur « File `xyz.sty' not found »).
 
 Le Dockerfile le génère au build dans une étape `index` jetable, depuis la base de l'installation
 (`/usr/local/texlive/<année>/tlpkg/texlive.tlpdb`) : python3 n'entre pas dans l'image finale, qui ne
-reçoit que `/usr/share/kaxolax/packages.json`. Le build échoue si l'année de la base diffère de
+reçoit que `/usr/share/texink/packages.json`. Le build échoue si l'année de la base diffère de
 `TEXLIVE_YEAR`, s'il y a moins de 1 000 packages, ou si `amsmath.sty`, `graphicx.sty`,
 `hyperref.sty` ou `scrartcl.cls` (koma-script, de catégorie `TLCore`) manquent.
 
 ```bash
 python3 scripts/package-index.py /usr/local/texlive/2026/tlpkg/texlive.tlpdb -o packages.json
 python3 scripts/package-index.py texlive.tlpdb.xz --pretty    # xz accepté, ou l'entrée standard
-docker run --rm kaxolax-texlive:2026-medium cat /usr/share/kaxolax/packages.json > packages.json
+docker run --rm texink-texlive:2026-medium cat /usr/share/texink/packages.json > packages.json
 python3 -m unittest discover -s tests -p 'test_*.py'          # fixture : tests/fixtures/texlive.tlpdb
 ```
 
@@ -238,10 +238,10 @@ Configuration du dépôt GitHub (Settings → Environments), dans cet ordre :
 2. Vérifier ou poser la règle « Deployment branches and tags » = « Selected branches and tags »,
    avec la seule règle de branche `main`, **avant** d'ajouter les secrets.
 3. Y définir les secrets `R2_ACCESS_KEY_ID` et `R2_SECRET_ACCESS_KEY` (jeton R2 « Object Read &
-   Write » limité à ce bucket : sortie `texlive_publish` de kaxolax-infra) et les variables
+   Write » limité à ce bucket : sortie `texlive_publish` de texink-infra) et les variables
    `R2_ENDPOINT` (`https://<compte>.eu.r2.cloudflarestorage.com` : les buckets sont dans la
    juridiction UE, voir `terraform output r2_s3_endpoint`) et `R2_PUBLIC_BUCKET`
-   (`kaxolax-templates` : l'index est publié sous le préfixe `texlive/` du bucket public).
+   (`texink-templates` : l'index est publié sous le préfixe `texlive/` du bucket public).
 
 Ces secrets ne doivent pas exister au niveau du dépôt : tout workflow de n'importe quelle branche
 pourrait les lire, alors que seul un job de `main` reçoit ceux de l'environnement. Le job commence par
@@ -259,7 +259,7 @@ est sautée avec un avis dans le run.
 - build des deux variantes en linux/amd64 (architecture des conteneurs Cloudflare) ;
 - index des packages extrait de chaque image et attaché comme artefact ;
 - tests de fumée et suite malveillante, sous runc puis sous gVisor ;
-- sur `main`, publication sur GHCR ; l'empreinte (`sha256:…`) de chaque image est écrite dans le résumé du run, pour l'épingler dans kaxolax-platform et kaxolax-templates ;
+- sur `main`, publication sur GHCR ; l'empreinte (`sha256:…`) de chaque image est écrite dans le résumé du run, pour l'épingler dans texink-platform et texink-templates ;
 - sur `main`, une fois le lint et les deux variantes réussis, publication de l'index des packages dans R2 depuis l'environnement `r2-package-index`, après contrôle de sa règle de déploiement (voir « Index des packages »).
 
 Une reconstruction hebdomadaire récupère les correctifs de sécurité Debian.

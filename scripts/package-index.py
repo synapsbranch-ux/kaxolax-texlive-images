@@ -6,7 +6,7 @@
     xz -dc texlive.tlpdb.xz | python3 scripts/package-index.py > packages.json
 
 Bibliothèque standard uniquement : le script tourne dans une étape jetable du Dockerfile, et seul
-le JSON est copié dans l'image finale (/usr/share/kaxolax/packages.json).
+le JSON est copié dans l'image finale (/usr/share/texink/packages.json).
 
 Format de texlive.tlpdb : un enregistrement par paquet, séparés par une ligne vide ; une ligne
 « clé valeur » par attribut ; les listes de fichiers (runfiles, docfiles, srcfiles, binfiles)
@@ -51,7 +51,7 @@ FILE_SECTIONS = frozenset({"runfiles", "docfiles", "srcfiles", "binfiles"})
 TREE_PREFIXES = frozenset({"RELOC", "texmf-dist", "texmf"})
 # Arbres tex/<x>/ propres à LaTeX et à ses moteurs pdfLaTeX, XeLaTeX et LuaLaTeX. Le TEXINPUTS de
 # ces formats finit par tex// : les fichiers de tex/platex, tex/latex-dev, tex/plain… leur restent
-# accessibles, mais ne sont volontairement pas indexés (formats que Kaxolax ne propose pas, ou
+# accessibles, mais ne sont volontairement pas indexés (formats que Tex.ink ne propose pas, ou
 # doublons de pré-version).
 STYLE_TREES = frozenset({"latex", "generic", "xelatex", "lualatex", "xetex", "luatex"})
 STYLE_EXTENSIONS = (".sty", ".cls")

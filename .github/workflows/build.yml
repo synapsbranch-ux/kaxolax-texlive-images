@@ -70,7 +70,7 @@ jobs:
 
       - name: Build
         run: |
-          tag="kaxolax-texlive:${TEXLIVE_YEAR}-${{ matrix.scheme }}"
+          tag="texink-texlive:${TEXLIVE_YEAR}-${{ matrix.scheme }}"
           echo "LOCAL_TAG=${tag}" >> "$GITHUB_ENV"
           docker build \
             --build-arg "TEXLIVE_YEAR=${TEXLIVE_YEAR}" \
@@ -83,7 +83,7 @@ jobs:
         run: |
           file="packages-${{ matrix.scheme }}.json"
           cid=$(docker create "$LOCAL_TAG")
-          docker cp "${cid}:/usr/share/kaxolax/packages.json" "$file"
+          docker cp "${cid}:/usr/share/texink/packages.json" "$file"
           docker rm "$cid" >/dev/null
           summary=$(python3 - "$file" <<'PY'
           import json, sys
@@ -137,12 +137,12 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo "$GH_TOKEN" | docker login ghcr.io --username "${{ github.actor }}" --password-stdin
-          image="ghcr.io/${{ github.repository_owner }}/kaxolax-texlive"
+          image="ghcr.io/${{ github.repository_owner }}/texink-texlive"
           for tag in "${TEXLIVE_YEAR}-${{ matrix.scheme }}" "${TEXLIVE_YEAR}-${{ matrix.scheme }}-${GITHUB_SHA::7}"; do
             docker tag "$LOCAL_TAG" "${image}:${tag}"
             docker push "${image}:${tag}"
           done
-          # Empreinte à reporter dans kaxolax-platform et kaxolax-templates (image épinglée).
+          # Empreinte à reporter dans texink-platform et texink-templates (image épinglée).
           digest=$(docker inspect --format '{{index .RepoDigests 0}}' "${image}:${TEXLIVE_YEAR}-${{ matrix.scheme }}")
           echo "Image publiée : \`${digest}\`" | tee -a "$GITHUB_STEP_SUMMARY"
 

@@ -1,5 +1,5 @@
 ---
-a0: &a0 ["kaxolax","kaxolax","kaxolax","kaxolax","kaxolax","kaxolax","kaxolax","kaxolax","kaxolax"]
+a0: &a0 ["texink","texink","texink","texink","texink","texink","texink","texink","texink"]
 a1: &a1 [*a0,*a0,*a0,*a0,*a0,*a0,*a0,*a0,*a0]
 a2: &a2 [*a1,*a1,*a1,*a1,*a1,*a1,*a1,*a1,*a1]
 a3: &a3 [*a2,*a2,*a2,*a2,*a2,*a2,*a2,*a2,*a2]

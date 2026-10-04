@@ -1,5 +1,5 @@
 {
-  "description": "pandoc : clés de citation qui injecteraient du LaTeX dans \\autocite{…} (--biblatex), syntaxe @{…} : le filtre Kaxolax les refuse, la citation reste du texte échappé et la clé est signalée. Le LaTeX produit compile sans rien exécuter.",
+  "description": "pandoc : clés de citation qui injecteraient du LaTeX dans \\autocite{…} (--biblatex), syntaxe @{…} : le filtre Tex.ink les refuse, la citation reste du texte échappé et la clé est signalée. Le LaTeX produit compile sans rien exécuter.",
   "convert": { "mode": "document", "citations": "biblatex", "compile": "pdflatex" },
   "timeoutSeconds": 90,
   "expect": {

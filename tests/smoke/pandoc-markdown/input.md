@@ -1,6 +1,6 @@
 ---
 title: Conversion Markdown
-author: Kaxolax
+author: Tex.ink
 ---
 
 # Introduction

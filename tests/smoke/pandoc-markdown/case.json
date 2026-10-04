@@ -14,7 +14,7 @@
       "{figures/plot.png}",
       "{media/1630582cb4d9471b8d5c8ee5048ddc5b6b0662f8.png}",
       "\\title{Conversion Markdown}",
-      "%KAXOLAX-BODY-BEGIN-"
+      "%TEXINK-BODY-BEGIN-"
     ],
     "reportContains": ["\"kind\":\"project\"", "\"kind\":\"embedded\""],
     "logLacks": ["Undefined control sequence", "not found"]

@@ -47,7 +47,7 @@ Chaque décision non triviale : contexte, décision, alternatives écartées (ci
 ## 2026-10-01 · Index des packages généré depuis `texlive.tlpdb` au build, publié dans R2
 
 - Contexte : le gestionnaire de packages (tâche 10) a besoin de tous les packages de TeX Live et du package qui fournit chaque `.sty`/`.cls` (erreur « File `xyz.sty' not found »).
-- Décision : `scripts/package-index.py` (stdlib) lit la base installée dans une étape Docker `index` jetable ; seul `/usr/share/kaxolax/packages.json` entre dans l'image, sans python3. Le build échoue si l'année diffère, s'il y a moins de 1 000 packages ou si des styles de base manquent.
+- Décision : `scripts/package-index.py` (stdlib) lit la base installée dans une étape Docker `index` jetable ; seul `/usr/share/texink/packages.json` entre dans l'image, sans python3. Le build échoue si l'année diffère, s'il y a moins de 1 000 packages ou si des styles de base manquent.
 - Périmètre : catégories `Package` et `ConTeXt`, plus les `TLCore` qui ont une fiche au catalogue CTAN ou un `.sty`/`.cls` (TeX Live y range koma-script, dvips, asymptote) ; `ctanUrl` vaut `null` sans fiche. Styles : runfiles `.sty`/`.cls` sous `tex/{latex,generic,xelatex,lualatex,xetex,luatex}` ; `tex/platex`, `tex/latex-dev`, `tex/plain`… restent lisibles (`TEXINPUTS` finit par `tex//`) mais ne sont pas indexés. TeX Live 2026 complet : 4 821 packages, 1,9 Mo.
 - Publication : un job séparé (après le lint et les deux images, permission `actions: read` seule) dans l'environnement GitHub `r2-package-index` (déploiement limité à `main`, seul détenteur des secrets R2, absents du dépôt : une autre branche ne peut pas les lire en modifiant le workflow) publie l'index de l'image `full` sous `texlive/<année>/packages.json`, et chaque variante sous `texlive/<année>/<variante>/`. GitHub crée l'environnement sans règle au premier run : le job échoue tant que la règle n'est pas exactement `main`.
 - Écartés : le catalogue CTAN interrogé à l'exécution (réseau, ne reflète pas l'image), `tlmgr info --json` (Perl dans l'étape, sortie bien plus lourde).
@@ -60,7 +60,7 @@ Chaque décision non triviale : contexte, décision, alternatives écartées (ci
 
 ## 2026-10-03 · Conversion pandoc : `--sandbox`, filtre Lua unique et contrôlé
 
-- `--sandbox` empêche pandoc de lire fichiers et URL, mais ne couvre ni les filtres Lua ni `--extract-media` (qui, sous sandbox, n'extrait plus rien). Un seul filtre, `pandoc/kaxolax-convert.lua` de l'image : il ne décode que des URI `data:`, n'écrit que `media/<sha1>.<ext>` et `kaxolax-report.json`, et réécrit les chemins d'images.
+- `--sandbox` empêche pandoc de lire fichiers et URL, mais ne couvre ni les filtres Lua ni `--extract-media` (qui, sous sandbox, n'extrait plus rien). Un seul filtre, `pandoc/texink-convert.lua` de l'image : il ne décode que des URI `data:`, n'écrit que `media/<sha1>.<ext>` et `texink-report.json`, et réécrit les chemins d'images.
 - Commande constante (`--data-dir` de l'image, aucun modèle, défaut ni filtre du projet), tas plafonné `+RTS -M512m`, mêmes règles de conteneur qu'une compilation. LaTeX brut du texte échappé par défaut ; autorisé, il reste compilé dans le sandbox. Le contenu des formules (métadonnées YAML comprises) est toujours recopié tel quel : le sandbox de compilation est la seule barrière (cas `pandoc-math-latex`).
 - Cas malveillants `pandoc-*` (lecture de fichiers, LaTeX brut, filtres et modèles du projet, images `data:`, ressources distantes, bombe YAML) et smoke test compilé.
 

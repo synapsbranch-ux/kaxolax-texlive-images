@@ -1,4 +1,4 @@
-% Kaxolax : réglages de sécurité du sandbox de compilation.
+% Tex.ink : réglages de sécurité du sandbox de compilation.
 % Placé en tête de /usr/local/texlive/<année>/texmf.cnf, qui l'emporte sur texmf-dist/web2c/texmf.cnf
 % (dans un même fichier, kpathsea retient la première définition d'une variable).
 % Ces valeurs ne doivent jamais être assouplies, même temporairement.

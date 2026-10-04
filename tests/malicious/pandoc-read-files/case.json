@@ -1,5 +1,5 @@
 {
-  "description": "pandoc : images pointant vers /etc/passwd, hors du projet (../), vers un fichier de l'hôte ou en file:// : --sandbox interdit toute lecture, et le filtre Kaxolax les remplace par leur texte.",
+  "description": "pandoc : images pointant vers /etc/passwd, hors du projet (../), vers un fichier de l'hôte ou en file:// : --sandbox interdit toute lecture, et le filtre Tex.ink les remplace par leur texte.",
   "convert": { "mode": "document" },
   "timeoutSeconds": 30,
   "expect": {

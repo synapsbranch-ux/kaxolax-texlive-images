@@ -5,7 +5,7 @@
 set -eu
 target=/tmp/biber/cache
 if [ ! -d /tmp/biber ] || [ ! -w /tmp/biber ]; then
-  echo "kaxolax: /tmp/biber must be a writable tmpfs mounted with exec" >&2
+  echo "texink: /tmp/biber must be a writable tmpfs mounted with exec" >&2
   exit 1
 fi
 if [ ! -d "$target" ]; then

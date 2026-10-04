@@ -1,19 +1,19 @@
--- Filtre Lua contrôlé de la conversion Markdown → LaTeX de Kaxolax (seul filtre jamais passé à
+-- Filtre Lua contrôlé de la conversion Markdown → LaTeX de Tex.ink (seul filtre jamais passé à
 -- pandoc ; aucun filtre ne vient du projet ni de la demande).
 --
 -- Les filtres Lua ne sont pas couverts par `--sandbox` : ce code peut lire tout fichier et ouvrir
 -- le réseau. Il n'appelle donc `pandoc.mediabag.fetch` que sur une URI `data:` (décodée en
 -- mémoire), et n'écrit que deux noms constants du répertoire courant : `media/<sha1>.<ext>` et
--- `kaxolax-report.json`. Aucune valeur du document ne sert de chemin d'écriture.
+-- `texink-report.json`. Aucune valeur du document ne sert de chemin d'écriture.
 --
--- Entrée : `kaxolax-convert.json` (écrit par l'agent dans le répertoire courant) :
+-- Entrée : `texink-convert.json` (écrit par l'agent dans le répertoire courant) :
 --   sourceDir   répertoire du fichier Markdown dans le projet ('' : racine)
 --   graphicsDir répertoire depuis lequel LaTeX résout les images (celui du document principal)
 --   mediaDir    répertoire du projet où l'agent rangera les images extraites
 --   maxEmbedded nombre maximal d'images `data:` extraites
 --   marker      jeton aléatoire des marqueurs de début et de fin du corps
 --   fragment    vrai : titre, auteurs, date et résumé retirés des métadonnées (fragment)
--- Sortie : `kaxolax-report.json` (titre, images rencontrées et leur traitement, clés de citation
+-- Sortie : `texink-report.json` (titre, images rencontrées et leur traitement, clés de citation
 -- gardées et refusées).
 --
 -- Citations : pandoc écrit les clés telles quelles dans `\citep{…}` / `\autocite{…}` (`--natbib`,
@@ -21,8 +21,8 @@
 -- l'alphabet sûr (lettres, chiffres, `_:.-+/`) injecterait du LaTeX. La citation entière redevient
 -- alors du texte (échappé par le rédacteur) et la clé est signalée.
 
-local OPTIONS_FILE = 'kaxolax-convert.json'
-local REPORT_FILE = 'kaxolax-report.json'
+local OPTIONS_FILE = 'texink-convert.json'
+local REPORT_FILE = 'texink-report.json'
 local MEDIA_DIR = 'media'
 -- Images intégrées acceptées : celles que pdfLaTeX, XeLaTeX et LuaLaTeX incluent sans conversion.
 local EMBEDDED_TYPES = {
@@ -116,7 +116,7 @@ end
 
 -- Remplacement d'une image inutilisable : son texte alternatif.
 local function fallback(image)
-  return pandoc.Span(image.caption, { class = 'kaxolax-missing-image' })
+  return pandoc.Span(image.caption, { class = 'texink-missing-image' })
 end
 
 local function embedded_image(image)
@@ -186,7 +186,7 @@ function Cite(cite)
     local key = citation.id
     if #key > MAX_CITATION_KEY or not key:match(SAFE_CITATION_KEY) then
       add_unique(rejected_citations, rejected_cited, key:sub(1, MAX_CITATION_KEY))
-      return pandoc.Span(cite.content, { class = 'kaxolax-rejected-citation' })
+      return pandoc.Span(cite.content, { class = 'texink-rejected-citation' })
     end
   end
   for _, citation in ipairs(cite.citations) do
@@ -202,8 +202,8 @@ function Pandoc(doc)
       doc.meta[key] = nil
     end
   end
-  doc.blocks:insert(1, pandoc.RawBlock('latex', '%KAXOLAX-BODY-BEGIN-' .. options.marker))
-  doc.blocks:insert(pandoc.RawBlock('latex', '%KAXOLAX-BODY-END-' .. options.marker))
+  doc.blocks:insert(1, pandoc.RawBlock('latex', '%TEXINK-BODY-BEGIN-' .. options.marker))
+  doc.blocks:insert(pandoc.RawBlock('latex', '%TEXINK-BODY-END-' .. options.marker))
   local handle = assert(io.open(REPORT_FILE, 'wb'))
   handle:write(pandoc.json.encode({
     title = title or pandoc.json.null,

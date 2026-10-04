@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
-# Image TeX Live du sandbox de compilation Kaxolax.
-#   docker build --build-arg TEXLIVE_YEAR=2026 --build-arg TEXLIVE_SCHEME=medium -t kaxolax-texlive:2026-medium .
+# Image TeX Live du sandbox de compilation Tex.ink.
+#   docker build --build-arg TEXLIVE_YEAR=2026 --build-arg TEXLIVE_SCHEME=medium -t texink-texlive:2026-medium .
 # Variantes : medium (développement local et production, conteneur de compilation Cloudflare)
 # et full (toute la distribution, construite pour comparaison).
 
@@ -9,7 +9,7 @@ ARG DEBIAN_IMAGE=debian:trixie-20260918-slim@sha256:a99cfc517144bc59b1978475ec53
 # Architecture de la cible (fournie par BuildKit) : choisit l'archive de pandoc.
 ARG TARGETARCH
 # Image complétée par l'étape `pandoc-overlay` (développement local, voir le README).
-ARG PANDOC_OVERLAY_BASE=kaxolax-texlive:2026-medium
+ARG PANDOC_OVERLAY_BASE=texink-texlive:2026-medium
 ARG PANDOC_VERSION=3.12
 
 # pandoc (conversion Markdown → LaTeX, lancée dans le sandbox de compilation) : binaire statique
@@ -27,16 +27,16 @@ ADD --checksum=sha256:6cefcf7100e23a99447c26f89d1ff5b253f3407fcef99a9e27ae06f3ed
   https://github.com/jgm/pandoc/releases/download/${PANDOC_VERSION}/pandoc-${PANDOC_VERSION}-linux-arm64.tar.gz /tmp/pandoc.tar.gz
 
 # Arborescence /out copiée telle quelle dans l'image : le binaire seul (ni pandoc-server ni
-# pandoc-lua) et le répertoire de données de Kaxolax (filtre Lua contrôlé, aucun modèle).
+# pandoc-lua) et le répertoire de données de Tex.ink (filtre Lua contrôlé, aucun modèle).
 # hadolint ignore=DL3006
 FROM pandoc-download-${TARGETARCH} AS pandoc
 ARG PANDOC_VERSION
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-COPY pandoc /out/usr/share/kaxolax/pandoc
+COPY pandoc /out/usr/share/texink/pandoc
 RUN tar -xzf /tmp/pandoc.tar.gz -C /tmp \
   && install -D -m 0755 "/tmp/pandoc-${PANDOC_VERSION}/bin/pandoc" /out/usr/local/bin/pandoc \
   && /out/usr/local/bin/pandoc --version | head -n 1 | grep -qx "pandoc ${PANDOC_VERSION}" \
-  && chmod -R a+rX,go-w /out/usr/share/kaxolax/pandoc \
+  && chmod -R a+rX,go-w /out/usr/share/texink/pandoc \
   && rm -rf /tmp/pandoc.tar.gz "/tmp/pandoc-${PANDOC_VERSION}"
 
 # Ajoute pandoc (et la suite malveillante à jour) à une image TeX Live déjà construite, sans
@@ -46,7 +46,7 @@ RUN tar -xzf /tmp/pandoc.tar.gz -C /tmp \
 FROM ${PANDOC_OVERLAY_BASE} AS pandoc-overlay
 USER root
 COPY --from=pandoc /out/ /
-COPY tests/malicious /usr/share/kaxolax/malicious
+COPY tests/malicious /usr/share/texink/malicious
 # Règle de l'étape runtime réappliquée : une image de base locale peut ne pas l'avoir.
 RUN chmod 0600 /etc/passwd /etc/group
 USER 1000:1000
@@ -98,18 +98,18 @@ RUN apt-get update \
 
 COPY --from=installer /usr/local/texlive /usr/local/texlive
 COPY --from=pandoc /out/ /
-COPY texmf.cnf /tmp/kaxolax-texmf.cnf
+COPY texmf.cnf /tmp/texink-texmf.cnf
 COPY fontconfig/09-texlive-fonts.conf /etc/fonts/conf.d/09-texlive-fonts.conf
-COPY --chmod=0755 bin/biber bin/lualatex /opt/kaxolax/bin/
-COPY install/warmup-fonts.tex /usr/share/kaxolax/warmup-fonts.tex
-COPY tests/malicious /usr/share/kaxolax/malicious
+COPY --chmod=0755 bin/biber bin/lualatex /opt/texink/bin/
+COPY install/warmup-fonts.tex /usr/share/texink/warmup-fonts.tex
+COPY tests/malicious /usr/share/texink/malicious
 
-ENV PATH=/opt/kaxolax/bin:/usr/local/texlive/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin \
+ENV PATH=/opt/texink/bin:/usr/local/texlive/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin \
   HOME=/tmp \
   TEXMFVAR=/tmp/texmf-var \
   LANG=C.UTF-8 \
-  KAXOLAX_TEXLIVE_YEAR=${TEXLIVE_YEAR} \
-  KAXOLAX_TEXLIVE_SCHEME=${TEXLIVE_SCHEME}
+  TEXINK_TEXLIVE_YEAR=${TEXLIVE_YEAR} \
+  TEXINK_TEXLIVE_SCHEME=${TEXLIVE_SCHEME}
 
 # Réglages durcis placés en tête du texmf.cnf local (kpathsea retient la première définition, et
 # install-tl y écrit déjà shell_escape), puis caches de polices construits une fois pour
@@ -119,14 +119,14 @@ ENV PATH=/opt/kaxolax/bin:/usr/local/texlive/bin:/usr/local/sbin:/usr/local/bin:
 # chaque compilation, dans un conteneur neuf, le reconstruirait.
 # openin_any n'a plus d'effet depuis TeX Live 2026 : TeX et Lua peuvent lire tout fichier de
 # l'image. /etc/passwd et /etc/group sont donc illisibles pour l'UID 1000 du sandbox.
-RUN cat /tmp/kaxolax-texmf.cnf "/usr/local/texlive/${TEXLIVE_YEAR}/texmf.cnf" > /tmp/texmf.cnf \
+RUN cat /tmp/texink-texmf.cnf "/usr/local/texlive/${TEXLIVE_YEAR}/texmf.cnf" > /tmp/texmf.cnf \
   && mv /tmp/texmf.cnf "/usr/local/texlive/${TEXLIVE_YEAR}/texmf.cnf" \
-  && rm /tmp/kaxolax-texmf.cnf \
+  && rm /tmp/texink-texmf.cnf \
   && fc-cache -f \
   && export TEXMFVAR="/usr/local/texlive/${TEXLIVE_YEAR}/texmf-var" \
   && luaotfload-tool --update --force \
   && /usr/local/texlive/bin/lualatex -interaction=batchmode -output-directory=/tmp \
-    /usr/share/kaxolax/warmup-fonts.tex \
+    /usr/share/texink/warmup-fonts.tex \
   && rm -f /tmp/warmup-fonts.* \
   && unset TEXMFVAR \
   && mkdir /tmp/fmtcheck \
@@ -146,13 +146,13 @@ RUN cat /tmp/kaxolax-texmf.cnf "/usr/local/texlive/${TEXLIVE_YEAR}/texmf.cnf" > 
   && chmod 0600 /etc/passwd /etc/group
 
 # Copié après les caches de polices : une modification du script d'index ne les reconstruit pas.
-COPY --from=index /packages.json /usr/share/kaxolax/packages.json
+COPY --from=index /packages.json /usr/share/texink/packages.json
 
-LABEL org.opencontainers.image.title="kaxolax-texlive" \
-  org.opencontainers.image.description="TeX Live ${TEXLIVE_YEAR} (${TEXLIVE_SCHEME}) for the Kaxolax compile sandbox" \
-  org.opencontainers.image.source="https://github.com/synapsbranch-ux/kaxolax-texlive-images" \
-  dev.kaxolax.texlive.year="${TEXLIVE_YEAR}" \
-  dev.kaxolax.texlive.scheme="${TEXLIVE_SCHEME}"
+LABEL org.opencontainers.image.title="texink-texlive" \
+  org.opencontainers.image.description="TeX Live ${TEXLIVE_YEAR} (${TEXLIVE_SCHEME}) for the Tex.ink compile sandbox" \
+  org.opencontainers.image.source="https://github.com/synapsbranch-ux/texink-texlive-images" \
+  dev.texink.texlive.year="${TEXLIVE_YEAR}" \
+  dev.texink.texlive.scheme="${TEXLIVE_SCHEME}"
 
 USER 1000:1000
 WORKDIR /compile

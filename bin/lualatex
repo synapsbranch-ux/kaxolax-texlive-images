@@ -4,7 +4,7 @@
 # régénérerait (plusieurs secondes, voire minutes avec le schéma full).
 set -eu
 names="luatex-cache/generic/names"
-source="/usr/local/texlive/${KAXOLAX_TEXLIVE_YEAR}/texmf-var/${names}"
+source="/usr/local/texlive/${TEXINK_TEXLIVE_YEAR}/texmf-var/${names}"
 target="${TEXMFVAR}/${names}"
 if [ ! -d "$target" ] && [ -d "$source" ]; then
   mkdir -p "$target"
